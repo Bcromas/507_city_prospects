@@ -1,3 +1,5 @@
+#507 final project
+#Compare housing costs, startup environment, and cost of living between three U.S. cities.
 import requests
 import json
 from bs4 import BeautifulSoup
