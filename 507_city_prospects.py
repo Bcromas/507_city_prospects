@@ -32,6 +32,27 @@ def check_cache(url):
         return CACHE_DICT[url]
 #end of simple check of cache
 
+def home_prices(city):
+    zil_base_url = 'https://www.zillow.com/homes/for_sale'
+    zil_city_url = zil_base_url+"/"+city
+    city_in_cache = check_cache(zil_city_url)
+    city_soup = BeautifulSoup(city_in_cache,'html.parser')
+    photo_cards = city_soup.find(class_="photo-cards")
+    for i in photo_cards:
+        try:
+            home_url = i.a['href']
+            zil_home_url = zil_base_url+home_url
+            home_in_cache = check_cache(zil_home_url)
+        except:
+            pass
+
+    #the lines below will find the summary table at the bottom of each page, need to
+    # facts_table = url_soup.find(class_="zsg-table")
+    # table_rows = facts_table.find_all('tr')
+    # for i in table_rows:
+    #     print(i.text)
+    #     print("*"*20)
+
 if __name__ == "__main__":
     while True:
         user_input = input('Please enter a U.S. city and state abbreviation\ne.g. "philadelphia-pa" ')
@@ -40,15 +61,16 @@ if __name__ == "__main__":
             break
 
         else:
-            base_url = 'https://www.zillow.com/homes/for_sale/'
-            url = base_url+user_input
-            url_in_cache = check_cache(url)
-            url_soup = BeautifulSoup(url_in_cache,'html.parser')
-            facts_table = url_soup.find(class_="zsg-table")
-            table_rows = facts_table.find_all('tr')
-            for i in table_rows:
-                print(i.text)
-                print("*"*20)
+            home_prices(user_input)
+            # zil_base_url = 'https://www.zillow.com/homes/for_sale/'
+            # url = zil_base_url+user_input
+            # url_in_cache = check_cache(url)
+            # url_soup = BeautifulSoup(url_in_cache,'html.parser')
+            # facts_table = url_soup.find(class_="zsg-table")
+            # table_rows = facts_table.find_all('tr')
+            # for i in table_rows:
+            #     print(i.text)
+            #     print("*"*20)
 
 
 #http://api.wolframalpha.com/v2/query?appid=DEMO&input=population%20france&includepodid=Result&format=plaintext
