@@ -71,7 +71,7 @@ def home_prices(city):
         except:
             pass
 
-    for i in test_list: #continue adding attributes from home page to call to ZillowHome(), uncomment line 59, 
+    for i in test_list: #continue adding attributes from home page to call to ZillowHome(), uncomment line 59,
         print(i)
 #end of crawling Zillow for homes
 
