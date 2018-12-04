@@ -3,6 +3,7 @@
 import requests
 import json
 from bs4 import BeautifulSoup
+import sqlite3
 
 #caching functionality
 CACHE_FNAME = 'final_proj_CACHE.json'
@@ -15,7 +16,7 @@ except:
     CACHE_DICT = {}
 #end caching functionality
 
-#object for capturing Zillow home details
+#start of class for capturing Zillow home details
 class ZillowHome():
     def __init__(self, streetAddress, beds=None, baths=None, rooms=None, sqft=None, price=None, price_sqft=None, est_mortgage=None, url=None):
         self.streetAddress = streetAddress
@@ -30,7 +31,93 @@ class ZillowHome():
 
     def __str__(self):
         return "{} - Price:{} - Price/SQFT:{}".format(self.streetAddress, self.price,self.price_sqft)
+#end of class for capturing Zillow home details
 
+#var for DB
+DBNAME = 'city_prospects.db'
+
+#start of funct to setup DB
+def db_setup():
+    #start of attempt to create DB
+    try:
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+    except Exception as e:
+        print("Error creating DB: ",e)
+        conn.close()
+    #end of attempt to create DB
+
+    #start of attempt to drop Cities table
+    try:
+        statement = '''
+        DROP TABLE IF EXISTS 'Cities';
+        '''
+        cur.execute(statement)
+        conn.commit()
+    except Exception as e:
+        print("Error dropping Cities table: ",e)
+        conn.close()
+    #end of attempt to drop Cities table
+
+    #start of attempt to drop Houses table
+    try:
+        statement = '''
+        DROP TABLE IF EXISTS 'Houses';
+        '''
+        cur.execute(statement)
+        conn.commit()
+    except Exception as e:
+        print("Error dropping Houses table: ",e)
+        conn.close()
+    #end of attempt to drop Houses table
+
+    #start of attempt to create Cities table
+    try:
+        statement = '''
+        CREATE TABLE 'Cities' (
+        'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
+        'Name' TEXT,
+        'State' TEXT
+        );
+        '''
+        cur.execute(statement)
+        conn.commit()
+    except Exception as e:
+        print("Error creating Cities table: ",e)
+        conn.close()
+    #end of attempt to create Cities table
+
+    #start of attempt to create Houses table
+    try:
+        statement = '''
+        CREATE TABLE 'Houses' (
+        'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
+        'Street Address' TEXT,
+        'City' TEXT,
+        'Price' REAL,
+		CONSTRAINT fk_cities
+		FOREIGN KEY ('City')
+		REFERENCES Cities(Id)
+        );
+        '''
+        cur.execute(statement)
+        conn.commit()
+    except Exception as e:
+        print("Error creating Houses table: ",e)
+        conn.close()
+    #end of attempt to create Houses table
+#end of funct to setup DB
+
+def cities_insert(city_str):
+    try:
+        hyphen_break = city_str.find("-")
+    except Exception as e:
+        print("Error finding break,hyphen,comma: ",e)
+
+
+
+def houses_insert():
+    pass
 
 #start of simple check of cache
 def check_cache(url):
@@ -56,15 +143,28 @@ def home_prices(city):
     city_in_cache = check_cache(zil_city_url)
     city_soup = BeautifulSoup(city_in_cache,'html.parser')
     photo_cards = city_soup.find(class_="photo-cards")
-    # test_list = []
+    test_list = []
     for i in photo_cards:
+        # home_url = i.a['href']
+        # zil_home_url = zil_base_url+home_url
+        # home_in_cache = check_cache(zil_home_url)
+        # home_soup = BeautifulSoup(home_in_cache,'html.parser')
+        # zil_streetAddress = home_soup.find(class_ = "zsg-h1 hdp-home-header-st-addr").text
+        # zil_price = home_soup.find(class_ = "price").text
+        # zil_price_sqft = home_soup.find(id="yui_3_18_1_1_1543870631025_6979")
+        # print(zil_price_sqft)
+
         try:
             home_url = i.a['href']
             zil_home_url = zil_base_url+home_url
             home_in_cache = check_cache(zil_home_url)
             home_soup = BeautifulSoup(home_in_cache,'html.parser')
-            zil_streetAddress = home_soup.find(class_="zsg-h1 hdp-home-header-st-addr").text
-            x = ZillowHome(streetAddress=zil_streetAddress)
+            zil_streetAddress = home_soup.find(class_ = "zsg-h1 hdp-home-header-st-addr").text
+            zil_price = home_soup.find(class_ = "price").text
+            # zil_price_sqft = home_soup.find(class_ = "zsg-media-bd").text
+            # zil_price_sqft = home_soup.find(class_ = "'category-group-name' id='yui_3_18_1_1_1543870631025_6979'").text
+            # x = ZillowHome(streetAddress = zil_streetAddress, price = zil_price, price_sqft = zil_price_sqft)
+            x = ZillowHome(streetAddress = zil_streetAddress, price = zil_price)
             test_list.append(x)
             #call ZillowHome with streetAddress, beds, baths, rooms, sqft, price, price_sqft, est_mortgage, url=None)
 
@@ -82,18 +182,13 @@ if __name__ == "__main__":
         if user_input.lower() == 'exit':
             break
 
+        #to be consolidated later as 'start up' funct
+        elif user_input.lower() == 'db_setup':
+            db_setup()
+
+        elif user_input.lower().startswith('city_insert'):
+            # cities_insert(user_input[:12])
+            print(user_input[:12])
+
         else:
             home_prices(user_input)
-            # zil_base_url = 'https://www.zillow.com/homes/for_sale/'
-            # url = zil_base_url+user_input
-            # url_in_cache = check_cache(url)
-            # url_soup = BeautifulSoup(url_in_cache,'html.parser')
-            # facts_table = url_soup.find(class_="zsg-table")
-            # table_rows = facts_table.find_all('tr')
-            # for i in table_rows:
-            #     print(i.text)
-            #     print("*"*20)
-
-
-#http://api.wolframalpha.com/v2/query?appid=DEMO&input=population%20france&includepodid=Result&format=plaintext
-#http://api.wolframalpha.com/v2/query?appid=RTT5K2-JEYKEW4HKK&input=cost%20of%20living%20boston
