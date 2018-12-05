@@ -18,8 +18,9 @@ except:
 
 #start of class for capturing Zillow home details
 class ZillowHome():
-    def __init__(self, streetAddress, beds=None, baths=None, rooms=None, sqft=None, price=None, price_sqft=None, est_mortgage=None, url=None):
+    def __init__(self, streetAddress, city=None, beds=None, baths=None, rooms=None, sqft=None, price=None, price_sqft=None, est_mortgage=None, url=None):
         self.streetAddress = streetAddress
+        self.city = city
         self.beds = beds
         self.baths = baths
         self.rooms = rooms
@@ -108,16 +109,49 @@ def db_setup():
     #end of attempt to create Houses table
 #end of funct to setup DB
 
-def cities_insert(city_str):
+#start of funct to check DB for city, insert if needed, & return Cities record ID
+def cities_id(city, state):
+    conn = sqlite3.connect(DBNAME)
+    cur = conn.cursor()
+
+    state_id = ''
+
     try:
-        hyphen_break = city_str.find("-")
+        statement = "SELECT Id from Cities WHERE Name='{}'".format(city.title())
+        cur.execute(statement)
+        x = cur.fetchall()
+        if len(x) == 0:
+            insertion = (None,city.title(),state.upper())
+            statement = 'INSERT into Cities '
+            statement += 'VALUES (?,?,?)'
+            cur.execute(statement,insertion)
+            conn.commit()
+
+            state_id = cur.lastrowid
+
+        else:
+            state_id = x[0][0]
+
     except Exception as e:
-        print("Error finding break,hyphen,comma: ",e)
+        print("Error finding Cities record: ",e)
 
+    return state_id
+#end of funct to check DB for city, insert if needed, & return Cities record ID
 
+#start of funct to insert House instances into DB
+def houses_insert(house):
+    conn = sqlite3.connect(DBNAME)
+    cur = conn.cursor()
 
-def houses_insert():
-    pass
+    try:
+        insertion = (None, house.streetAddress, house.city, house.price)
+        statement = 'INSERT into Houses '
+        statement += 'VALUES (?,?,?,?)'
+        cur.execute(statement,insertion)
+        conn.commit()
+    except Exception as e:
+        print("Error inserting Houses record: ",e)
+#end of funct to insert House instances into DB
 
 #start of simple check of cache
 def check_cache(url):
@@ -137,7 +171,9 @@ def check_cache(url):
 #end of simple check of cache
 
 #start of crawling Zillow for homes
-def home_prices(city):
+def home_prices(city,state_id):
+    state_id = state_id
+
     zil_base_url = 'https://www.zillow.com/homes/for_sale'
     zil_city_url = zil_base_url+"/"+city
     city_in_cache = check_cache(zil_city_url)
@@ -164,7 +200,7 @@ def home_prices(city):
             # zil_price_sqft = home_soup.find(class_ = "zsg-media-bd").text
             # zil_price_sqft = home_soup.find(class_ = "'category-group-name' id='yui_3_18_1_1_1543870631025_6979'").text
             # x = ZillowHome(streetAddress = zil_streetAddress, price = zil_price, price_sqft = zil_price_sqft)
-            x = ZillowHome(streetAddress = zil_streetAddress, price = zil_price)
+            x = ZillowHome(streetAddress = zil_streetAddress, city = state_id, price = zil_price)
             test_list.append(x)
             #call ZillowHome with streetAddress, beds, baths, rooms, sqft, price, price_sqft, est_mortgage, url=None)
 
@@ -172,12 +208,14 @@ def home_prices(city):
             pass
 
     for i in test_list: #continue adding attributes from home page to call to ZillowHome(), uncomment line 59,
-        print(i)
+        # print(i)
+        houses_insert(i)
 #end of crawling Zillow for homes
 
 if __name__ == "__main__":
     while True:
-        user_input = input('Please enter a U.S. city and state abbreviation\ne.g. "philadelphia-pa" ')
+        # user_input = input('Please enter a U.S. city and state abbreviation\ne.g. "philadelphia-pa" ')
+        user_input = input('Please enter a command\ne.g. "city_insert" ')
 
         if user_input.lower() == 'exit':
             break
@@ -186,9 +224,23 @@ if __name__ == "__main__":
         elif user_input.lower() == 'db_setup':
             db_setup()
 
-        elif user_input.lower().startswith('city_insert'):
-            # cities_insert(user_input[:12])
-            print(user_input[:12])
+        elif user_input.lower() == 'city_insert':
+            while True:
+                city_input = input('Enter your first city in format {City Name}-{State Abbrev} ')
+                if '-' in city_input:
+                    city = city_input.split('-')[0]
+                    state = city_input.split('-')[1]
+                    find = cities_id(city,state) #holds the id of the relevant Cities record in DB
+                    # print(find)
+                    home_prices(city_input,find)
+                if city_input.lower() == 'exit':
+                    break
+                # else:
+                #     home_prices(city_input)
+        # elif user_input.lower() == 'house_insert':
+        #     test = ZillowHome(streetAddress = '216 Winthrop Rd', city = '8', price = 95800)
+        #     houses_insert(test)
 
-        else:
-            home_prices(user_input)
+
+        # else:
+        #     home_prices(user_input)
