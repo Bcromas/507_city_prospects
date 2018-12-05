@@ -5,6 +5,7 @@ import json
 from bs4 import BeautifulSoup
 import sqlite3
 import plotly.plotly as py
+import plotly.graph_objs as go
 
 #caching functionality
 CACHE_FNAME = 'final_proj_CACHE.json'
@@ -182,15 +183,6 @@ def home_prices(city,state_id):
     photo_cards = city_soup.find(class_="photo-cards")
     test_list = []
     for i in photo_cards:
-        # home_url = i.a['href']
-        # zil_home_url = zil_base_url+home_url
-        # home_in_cache = check_cache(zil_home_url)
-        # home_soup = BeautifulSoup(home_in_cache,'html.parser')
-        # zil_streetAddress = home_soup.find(class_ = "zsg-h1 hdp-home-header-st-addr").text
-        # zil_price = home_soup.find(class_ = "price").text
-        # zil_price_sqft = home_soup.find(id="yui_3_18_1_1_1543870631025_6979")
-        # print(zil_price_sqft)
-
         try:
             home_url = i.a['href']
             zil_home_url = zil_base_url+home_url
@@ -213,8 +205,19 @@ def home_prices(city,state_id):
         houses_insert(i)
 #end of crawling Zillow for homes
 
-def graph_1():
-    pass
+def graph_1(): #pass in a list containing prices & a list containing sq ft
+
+    # Create a trace
+    trace = go.Scatter(
+        x = [450000,235000,171800],
+        y = [2700,1308,860],
+        mode = 'markers'
+    )
+
+    data = [trace]
+
+    #plot
+    plot_url = py.plot(data, filename='basic-line')
 
 if __name__ == "__main__":
     while True:
@@ -230,7 +233,7 @@ if __name__ == "__main__":
 
         elif user_input.lower() == 'city_insert':
             while True:
-                city_input = input('Enter your first city in format {City Name}-{State Abbrev} ')
+                city_input = input('Enter your first city in format {City Name}-{State Abbrev}: ')
                 if '-' in city_input:
                     city = city_input.split('-')[0]
                     state = city_input.split('-')[1]
@@ -239,12 +242,10 @@ if __name__ == "__main__":
                     home_prices(city_input,find)
                 if city_input.lower() == 'exit':
                     break
-                # else:
-                #     home_prices(city_input)
-        # elif user_input.lower() == 'house_insert':
-        #     test = ZillowHome(streetAddress = '216 Winthrop Rd', city = '8', price = 95800)
-        #     houses_insert(test)
 
+        elif user_input.lower() == 'graph_1':
+            graph1_input = input('Which city would you like to plot? ')
+            conn = sqlite3.connect(DBNAME)
+            cur = conn.cursor()
 
-        # else:
-        #     home_prices(user_input)
+            graph_1()
