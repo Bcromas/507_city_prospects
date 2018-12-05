@@ -4,6 +4,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 import sqlite3
+import plotly.plotly as py
 
 #caching functionality
 CACHE_FNAME = 'final_proj_CACHE.json'
@@ -213,7 +214,7 @@ def home_prices(city,state_id):
 #end of crawling Zillow for homes
 
 def graph_1():
-    pass 
+    pass
 
 if __name__ == "__main__":
     while True:
