@@ -38,7 +38,7 @@ class ZillowHome():
 DBNAME = 'city_prospects.db'
 
 #start of funct to setup DB
-def db_setup():
+def db_setup(DBNAME):
     #start of attempt to create DB
     try:
         conn = sqlite3.connect(DBNAME)
@@ -211,6 +211,9 @@ def home_prices(city,state_id):
         # print(i)
         houses_insert(i)
 #end of crawling Zillow for homes
+
+def graph_1():
+    pass 
 
 if __name__ == "__main__":
     while True:
