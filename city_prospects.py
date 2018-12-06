@@ -62,17 +62,17 @@ def db_setup(DBNAME):
         conn.close()
     #end of attempt to drop Cities table
 
-    #start of attempt to drop Houses table
+    #start of attempt to drop Apartments table
     try:
         statement = '''
-        DROP TABLE IF EXISTS 'Houses';
+        DROP TABLE IF EXISTS 'Apartments';
         '''
         cur.execute(statement)
         conn.commit()
     except Exception as e:
-        print("Error dropping Houses table: ",e)
+        print("Error dropping Apartments table: ",e)
         conn.close()
-    #end of attempt to drop Houses table
+    #end of attempt to drop Apartments table
 
     #start of attempt to create Cities table
     try:
@@ -90,14 +90,19 @@ def db_setup(DBNAME):
         conn.close()
     #end of attempt to create Cities table
 
-    #start of attempt to create Houses table
+    #start of attempt to create Apartments table
     try:
         statement = '''
-        CREATE TABLE 'Houses' (
+        CREATE TABLE 'Apartments' (
         'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
         'Street Address' TEXT,
         'City' TEXT,
         'Price' REAL,
+        'Beds' INTEGER,
+        'Baths' INTEGER,
+        'SQFT' INTEGER,
+        'Price/SQFT' REAL,
+        'URL' TEXT,
 		CONSTRAINT fk_cities
 		FOREIGN KEY ('City')
 		REFERENCES Cities(Id)
@@ -106,9 +111,9 @@ def db_setup(DBNAME):
         cur.execute(statement)
         conn.commit()
     except Exception as e:
-        print("Error creating Houses table: ",e)
+        print("Error creating Apartments table: ",e)
         conn.close()
-    #end of attempt to create Houses table
+    #end of attempt to create Apartments table
 #end of funct to setup DB
 
 #start of funct to check DB for city, insert if needed, & return Cities record ID
@@ -141,18 +146,18 @@ def cities_id(city, state):
 #end of funct to check DB for city, insert if needed, & return Cities record ID
 
 #start of funct to insert House instances into DB
-def houses_insert(house):
+def apartments_insert(house):
     conn = sqlite3.connect(DBNAME)
     cur = conn.cursor()
 
     try:
-        insertion = (None, str(house.streetAddress), house.city, house.price)
-        statement = 'INSERT into Houses '
+        insertion = (None, house.streetAddress, house.city, house.price)
+        statement = 'INSERT into Apartments '
         statement += 'VALUES (?,?,?,?)'
         cur.execute(statement,insertion)
         conn.commit()
     except Exception as e:
-        print("Error inserting Houses record: ",e)
+        print("Error inserting Apartments record: ",e)
 #end of funct to insert House instances into DB
 
 #start of simple check of cache
@@ -204,11 +209,12 @@ def home_prices(city,city_id):
         #FINDING STREET ADDRESS
         zil_streetAddressX = home_soup.find(class_ = "zsg-content-header addr")
         zil_streetAddressY = zil_streetAddressX.find('h1')
-        zil_streetAddressZ = zil_streetAddressY.contents[0] #here's the actual street address
+        zil_streetAddressZ = str(zil_streetAddressY.contents[0]) #here's the actual street address
         zil_streetAddress_clean = zil_streetAddressZ.strip()
-        print('original: ',zil_streetAddressZ)
-        print('cleaned: ',zil_streetAddress_clean)
-        print("*"*20)
+        if zil_streetAddress_clean[-1] == ',':
+            zil_streetAddress_cleaner = zil_streetAddress_clean[:-1]
+        else:
+            zil_streetAddress_cleaner = zil_streetAddress_clean
 
         #FINDING PRICE
         zil_priceX = home_soup.find(class_ ="zsg-lg-1-3 zsg-md-1-1 hdp-summary")
@@ -244,19 +250,19 @@ def home_prices(city,city_id):
             else:
                 pass
 
-        x = ZillowHome(streetAddress = zil_streetAddressZ, city = city_id, price = zil_price, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ, url = zil_url)
+        x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ, url = zil_url)
         test_list.append(x)
-    # for i in test_list:
-        # print('street address: ',i.streetAddress)
-        # print('city id: ',i.city)
-        # print('price: ',i.price)
-        # print('beds: ',i.beds)
-        # print('baths: ',i.baths)
-        # print('sqft: ',i.sqft)
-        # print('URL: ',i.url)
-        # print("*"*20)
+    for i in test_list:
+    #     print('street address:',i.streetAddress)
+    #     print('city id: ',i.city)
+    #     print('price: ',i.price)
+    #     print('beds: ',i.beds)
+    #     print('baths: ',i.baths)
+    #     print('sqft: ',i.sqft)
+    #     print('URL: ',i.url)
+    #     print("*"*20)
 
-        # houses_insert(i)
+        apartments_insert(i)
 
 
 #end of crawling Zillow for homes
@@ -270,7 +276,7 @@ def graph_1(city_id): #pass in a list containing prices & a list containing sq f
     conn = sqlite3.connect(DBNAME)
     cur = conn.cursor()
     statement = "SELECT Price "
-    statement += "FROM Houses "
+    statement += "FROM Apartments "
     statement += "WHERE City = '{}'".format(city_id)
     cur.execute(statement)
     for i in cur:
@@ -301,7 +307,7 @@ if __name__ == "__main__":
 
         #to be consolidated later as 'start up' funct
         elif user_input.lower() == 'db_setup':
-            db_setup()
+            db_setup(DBNAME)
 
         elif user_input.lower() == 'city_insert':
             while True:
