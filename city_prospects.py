@@ -177,6 +177,7 @@ def home_prices(city,city_id):
     city_id = city_id
 
     zil_base_url = 'https://www.zillow.com/homes/for_sale'
+    # zil_base_url = 'https://www.zillow.com/homes/for_rent'
     zil_city_url = zil_base_url+"/"+city
     city_in_cache = check_cache(zil_city_url)
     city_soup = BeautifulSoup(city_in_cache,'html.parser')
