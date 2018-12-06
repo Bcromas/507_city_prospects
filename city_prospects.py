@@ -176,34 +176,103 @@ def check_cache(url):
 def home_prices(city,city_id):
     city_id = city_id
 
-    zil_base_url = 'https://www.zillow.com/homes/for_sale'
-    # zil_base_url = 'https://www.zillow.com/homes/for_rent'
+    # zil_base_url = 'https://www.zillow.com/homes/for_sale'
+    zil_base_url = 'https://www.zillow.com/homes/for_rent'
     zil_city_url = zil_base_url+"/"+city
     city_in_cache = check_cache(zil_city_url)
     city_soup = BeautifulSoup(city_in_cache,'html.parser')
     photo_cards = city_soup.find(class_="photo-cards")
     test_list = []
+    url_list = []
+    # for i in photo_cards:
+    #     try:
+    #         home_url = i.a['href']
+    #         zil_home_url = zil_base_url+home_url
+    #         home_in_cache = check_cache(zil_home_url)
+    #         home_soup = BeautifulSoup(home_in_cache,'html.parser')
+    #         zil_streetAddress = home_soup.find(class_ = "zsg-h1 hdp-home-header-st-addr").text
+    #         zil_price = home_soup.find(class_ = "price").text
+    #         # zil_price_sqft = home_soup.find(class_ = "zsg-media-bd").text
+    #         # zil_price_sqft = home_soup.find(class_ = "'category-group-name' id='yui_3_18_1_1_1543870631025_6979'").text
+    #         # x = ZillowHome(streetAddress = zil_streetAddress, price = zil_price, price_sqft = zil_price_sqft)
+    #         x = ZillowHome(streetAddress = zil_streetAddress, city = city_id, price = zil_price)
+    #         test_list.append(x)
+    #         #call ZillowHome with streetAddress, beds, baths, rooms, sqft, price, price_sqft, est_mortgage, url=None)
+    #
+    #     except:
+    #         pass
+    #
+    # for i in test_list: #continue adding attributes from home page to call to ZillowHome(), uncomment line 59,
+    #     # print(i)
+    #     houses_insert(i)
     for i in photo_cards:
         try:
             home_url = i.a['href']
-            zil_home_url = zil_base_url+home_url
-            home_in_cache = check_cache(zil_home_url)
-            home_soup = BeautifulSoup(home_in_cache,'html.parser')
-            zil_streetAddress = home_soup.find(class_ = "zsg-h1 hdp-home-header-st-addr").text
-            zil_price = home_soup.find(class_ = "price").text
-            # zil_price_sqft = home_soup.find(class_ = "zsg-media-bd").text
-            # zil_price_sqft = home_soup.find(class_ = "'category-group-name' id='yui_3_18_1_1_1543870631025_6979'").text
-            # x = ZillowHome(streetAddress = zil_streetAddress, price = zil_price, price_sqft = zil_price_sqft)
-            x = ZillowHome(streetAddress = zil_streetAddress, city = city_id, price = zil_price)
-            test_list.append(x)
-            #call ZillowHome with streetAddress, beds, baths, rooms, sqft, price, price_sqft, est_mortgage, url=None)
-
-        except:
+            if 'homedetails'in home_url:
+                zil_home_url = zil_base_url+home_url
+                url_list.append(zil_home_url)
+            else:
+                pass
+        except Exception as e:
+            # print('Error: ',e)
             pass
+    for i in url_list:
+        home_in_cache = check_cache(i)
+        home_soup = BeautifulSoup(home_in_cache,'html.parser')
 
-    for i in test_list: #continue adding attributes from home page to call to ZillowHome(), uncomment line 59,
-        # print(i)
-        houses_insert(i)
+        zil_url = i #here's apt URL
+
+        #FINDING STREET ADDRESS
+        zil_streetAddressX = home_soup.find(class_ = "zsg-content-header addr")
+        zil_streetAddressY = zil_streetAddressX.find('h1')
+        zil_streetAddressZ = zil_streetAddressY.contents[0] #here's the actual street address
+
+        #FINDING PRICE
+        zil_priceX = home_soup.find(class_ ="zsg-lg-1-3 zsg-md-1-1 hdp-summary")
+        zil_priceY = zil_priceX.find(class_ ="main-row home-summary-row")
+        zil_price = zil_priceY.find(class_ ="").contents[0] #here's the actual price
+
+        #FINDING BEDS
+        facts_expandable = home_soup.find(class_ ="hdp-facts-expandable-container clear") #one large section starting with 'Facts and Features'
+        facts_columns = facts_expandable.find_all(class_ = "hdp-fact-container-columns") #multiple subsections containing grouped details on apt
+        for i in facts_columns: #iterate through various subsections e.g. 'RENTAL FACTS' or 'INTERIOR FEATURES'
+            fact_category = i.find(class_ = "hdp-fact-category") #grab all 'fact categories' a.k.a. apt details
+            try:
+                if fact_category.text == 'Bedrooms': #find apt detail with given title
+                    zil_beds = fact_category.parent.find(class_="hdp-fact-value").text #go back up one level to grab actual value for apt detail with given title above
+            except:
+                pass
+
+        #FINDING BATHS
+        zil_bathsX = home_soup.find(class_ = "zsg-content-header addr")
+        zil_bathsY = zil_bathsX.find_all(class_="addr_bbs")
+        for i in zil_bathsY:
+            if 'bath' in i.text:
+                zil_bathsZ = i.text.split(' ')[0]
+            else:
+                pass
+
+        #FINDING SQFT
+        zil_sqftX = home_soup.find(class_ = "zsg-content-header addr")
+        zil_sqftY = zil_sqftX.find_all(class_="addr_bbs")
+        for i in zil_sqftY:
+            if 'sqft' in i.text:
+                zil_sqftZ = i.text.split(' ')[0]
+            else:
+                pass
+
+        x = ZillowHome(streetAddress = zil_streetAddressZ, city = city_id, price = zil_price, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ, url = zil_url)
+        test_list.append(x)
+    for i in test_list:
+        print('street address: ',i.streetAddress)
+        print('city id: ',i.city)
+        print('price: ',i.price)
+        print('beds: ',i.beds)
+        print('baths: ',i.baths)
+        print('sqft: ',i.sqft)
+        print('URL: ',i.url)
+        print("*"*20)
+
 #end of crawling Zillow for homes
 
 def graph_1(city_id): #pass in a list containing prices & a list containing sq ft
