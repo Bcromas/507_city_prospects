@@ -116,7 +116,7 @@ def cities_id(city, state):
     conn = sqlite3.connect(DBNAME)
     cur = conn.cursor()
 
-    state_id = ''
+    city_id = ''
 
     try:
         statement = "SELECT Id from Cities WHERE Name='{}'".format(city.title())
@@ -129,15 +129,15 @@ def cities_id(city, state):
             cur.execute(statement,insertion)
             conn.commit()
 
-            state_id = cur.lastrowid
+            city_id = cur.lastrowid
 
         else:
-            state_id = x[0][0]
+            city_id = x[0][0]
 
     except Exception as e:
         print("Error finding Cities record: ",e)
 
-    return state_id
+    return city_id
 #end of funct to check DB for city, insert if needed, & return Cities record ID
 
 #start of funct to insert House instances into DB
@@ -173,8 +173,8 @@ def check_cache(url):
 #end of simple check of cache
 
 #start of crawling Zillow for homes
-def home_prices(city,state_id):
-    state_id = state_id
+def home_prices(city,city_id):
+    city_id = city_id
 
     zil_base_url = 'https://www.zillow.com/homes/for_sale'
     zil_city_url = zil_base_url+"/"+city
@@ -193,7 +193,7 @@ def home_prices(city,state_id):
             # zil_price_sqft = home_soup.find(class_ = "zsg-media-bd").text
             # zil_price_sqft = home_soup.find(class_ = "'category-group-name' id='yui_3_18_1_1_1543870631025_6979'").text
             # x = ZillowHome(streetAddress = zil_streetAddress, price = zil_price, price_sqft = zil_price_sqft)
-            x = ZillowHome(streetAddress = zil_streetAddress, city = state_id, price = zil_price)
+            x = ZillowHome(streetAddress = zil_streetAddress, city = city_id, price = zil_price)
             test_list.append(x)
             #call ZillowHome with streetAddress, beds, baths, rooms, sqft, price, price_sqft, est_mortgage, url=None)
 
@@ -205,12 +205,28 @@ def home_prices(city,state_id):
         houses_insert(i)
 #end of crawling Zillow for homes
 
-def graph_1(): #pass in a list containing prices & a list containing sq ft
+def graph_1(city_id): #pass in a list containing prices & a list containing sq ft
+
+    # print('here is yo city',city_id)
+    price_list = []
+    sqft_list = []
+
+    conn = sqlite3.connect(DBNAME)
+    cur = conn.cursor()
+    statement = "SELECT Price "
+    statement += "FROM Houses "
+    statement += "WHERE City = '{}'".format(city_id)
+    cur.execute(statement)
+    for i in cur:
+        price_list.append(i[0])
+        # some other variable(s)
+    conn.close()
 
     # Create a trace
     trace = go.Scatter(
-        x = [450000,235000,171800],
-        y = [2700,1308,860],
+        # x = [450000,235000,171800],
+        x = price_list,
+        y = [2700,1308,860,743,2600,108,960,850],
         mode = 'markers'
     )
 
@@ -244,8 +260,23 @@ if __name__ == "__main__":
                     break
 
         elif user_input.lower() == 'graph_1':
-            graph1_input = input('Which city would you like to plot? ')
-            conn = sqlite3.connect(DBNAME)
-            cur = conn.cursor()
+            while True:
+                graph1_input = input('Which city would you like to plot?\nPlease enter in format {City Name}-{State Abbrev}: ')
+                if '-' in graph1_input:
+                    city = graph1_input.split('-')[0]
+                    state = graph1_input.split('-')[1]
+                    try:
+                        conn = sqlite3.connect(DBNAME)
+                        cur = conn.cursor()
+                        statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
+                        cur.execute(statement)
+                        x = cur.fetchall()
+                        city_id = x[0][0]
+                        graph_1(city_id)
+                    except Exception as e:
+                        print("Error querying DB: ",e)
+                        conn.close()
 
-            graph_1()
+                        # graph_1()
+                if graph1_input.lower() == 'exit':
+                    break
