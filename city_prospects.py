@@ -29,7 +29,7 @@ class ZillowHome():
         self.sqft = sqft
         self.price = price
         self.price_sqft = price_sqft
-        self.est_mortgage = est_mortgage
+        # self.est_mortgage = est_mortgage
         self.url = url
 
     def __str__(self):
@@ -146,7 +146,7 @@ def houses_insert(house):
     cur = conn.cursor()
 
     try:
-        insertion = (None, house.streetAddress, house.city, house.price)
+        insertion = (None, str(house.streetAddress), house.city, house.price)
         statement = 'INSERT into Houses '
         statement += 'VALUES (?,?,?,?)'
         cur.execute(statement,insertion)
@@ -176,7 +176,6 @@ def check_cache(url):
 def home_prices(city,city_id):
     city_id = city_id
 
-    # zil_base_url = 'https://www.zillow.com/homes/for_sale'
     zil_base_url = 'https://www.zillow.com/homes/for_rent'
     zil_city_url = zil_base_url+"/"+city
     city_in_cache = check_cache(zil_city_url)
@@ -184,27 +183,7 @@ def home_prices(city,city_id):
     photo_cards = city_soup.find(class_="photo-cards")
     test_list = []
     url_list = []
-    # for i in photo_cards:
-    #     try:
-    #         home_url = i.a['href']
-    #         zil_home_url = zil_base_url+home_url
-    #         home_in_cache = check_cache(zil_home_url)
-    #         home_soup = BeautifulSoup(home_in_cache,'html.parser')
-    #         zil_streetAddress = home_soup.find(class_ = "zsg-h1 hdp-home-header-st-addr").text
-    #         zil_price = home_soup.find(class_ = "price").text
-    #         # zil_price_sqft = home_soup.find(class_ = "zsg-media-bd").text
-    #         # zil_price_sqft = home_soup.find(class_ = "'category-group-name' id='yui_3_18_1_1_1543870631025_6979'").text
-    #         # x = ZillowHome(streetAddress = zil_streetAddress, price = zil_price, price_sqft = zil_price_sqft)
-    #         x = ZillowHome(streetAddress = zil_streetAddress, city = city_id, price = zil_price)
-    #         test_list.append(x)
-    #         #call ZillowHome with streetAddress, beds, baths, rooms, sqft, price, price_sqft, est_mortgage, url=None)
-    #
-    #     except:
-    #         pass
-    #
-    # for i in test_list: #continue adding attributes from home page to call to ZillowHome(), uncomment line 59,
-    #     # print(i)
-    #     houses_insert(i)
+
     for i in photo_cards:
         try:
             home_url = i.a['href']
@@ -226,6 +205,10 @@ def home_prices(city,city_id):
         zil_streetAddressX = home_soup.find(class_ = "zsg-content-header addr")
         zil_streetAddressY = zil_streetAddressX.find('h1')
         zil_streetAddressZ = zil_streetAddressY.contents[0] #here's the actual street address
+        zil_streetAddress_clean = zil_streetAddressZ.strip()
+        print('original: ',zil_streetAddressZ)
+        print('cleaned: ',zil_streetAddress_clean)
+        print("*"*20)
 
         #FINDING PRICE
         zil_priceX = home_soup.find(class_ ="zsg-lg-1-3 zsg-md-1-1 hdp-summary")
@@ -263,15 +246,18 @@ def home_prices(city,city_id):
 
         x = ZillowHome(streetAddress = zil_streetAddressZ, city = city_id, price = zil_price, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ, url = zil_url)
         test_list.append(x)
-    for i in test_list:
-        print('street address: ',i.streetAddress)
-        print('city id: ',i.city)
-        print('price: ',i.price)
-        print('beds: ',i.beds)
-        print('baths: ',i.baths)
-        print('sqft: ',i.sqft)
-        print('URL: ',i.url)
-        print("*"*20)
+    # for i in test_list:
+        # print('street address: ',i.streetAddress)
+        # print('city id: ',i.city)
+        # print('price: ',i.price)
+        # print('beds: ',i.beds)
+        # print('baths: ',i.baths)
+        # print('sqft: ',i.sqft)
+        # print('URL: ',i.url)
+        # print("*"*20)
+
+        # houses_insert(i)
+
 
 #end of crawling Zillow for homes
 
