@@ -5,11 +5,11 @@ class TestData(unittest.TestCase):
 
     #start testing of class to create ZillowHome instances
     def test_ZillowHome(self):
-        x = ZillowHome(streetAddress = "123 Main St.", city = "Boston" , beds = "3" , rooms = "6" , sqft = "2,700" , price = "$379,000" , price_sqft = "$140" , est_mortgage = "2,101" , url = "www.zillow.com")
+        x = ZillowHome(streetAddress = "123 Main St.", city = "8" , beds = "3" , sqft = "1200" , price = "1675" , url = "www.zillow.com")
         self.assertEqual(x.streetAddress, "123 Main St.")
-        self.assertEqual(x.city, "Boston")
+        self.assertEqual(x.price_sqft, 1.396)
         self.assertEqual(x.url, "www.zillow.com")
-        self.assertEqual(str(x), "123 Main St. - Price:$379,000 - Price/SQFT:$140")
+        self.assertEqual(str(x), "123 Main St. - Price:1675 - Price/SQFT:1.396")
     #end testing of class to create ZillowHome instances
 
     #start testing of DB setup, insert, & querying
