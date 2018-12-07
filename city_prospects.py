@@ -20,18 +20,22 @@ except:
 
 #start of class for capturing Zillow home details
 class ZillowHome():
-    # def __init__(self, streetAddress, city=None, beds=None, baths=None, rooms=None, sqft=None, price=None, price_sqft=None, est_mortgage=None, url=None):
     def __init__(self, streetAddress, city=None, beds=None, baths=None, sqft=None, price=None, url=None):
         self.streetAddress = streetAddress
         self.city = city
         self.beds = beds
         self.baths = baths
-        self.sqft = sqft
+        if sqft == "":
+            self.sqft = None
+        else:
+            self.sqft = sqft
         self.price = price
-        if (self.sqft.isdigit() and self.price.isdigit()):
+        if sqft == "":
+            self.price_sqft = None
+        elif (self.sqft.isdigit() and self.price.isdigit()):
             self.price_sqft = round(int(self.price)/int(self.sqft),3)
         else:
-            self.price_sqft = "NA"
+            self.price_sqft = None
         self.url = url
 
     def __str__(self):
@@ -153,7 +157,7 @@ def apartments_insert(house):
     cur = conn.cursor()
 
     try:
-        insertion = (None, house.streetAddress, house.city, house.price, house.beds, house.baths, house.SQFT, house.price_sqft, house.URL)
+        insertion = (None, house.streetAddress, house.city, house.price, house.beds, house.baths, house.sqft, house.price_sqft, house.url)
         statement = 'INSERT into Apartments '
         statement += 'VALUES (?,?,?,?,?,?,?,?,?)'
         cur.execute(statement,insertion)
@@ -180,7 +184,7 @@ def check_cache(url):
 #end of simple check of cache
 
 #start of crawling Zillow for homes
-def home_prices(city,city_id):
+def apartment_prices(city,city_id):
     city_id = city_id
 
     zil_base_url = 'https://www.zillow.com/homes/for_rent'
@@ -252,22 +256,21 @@ def home_prices(city,city_id):
                 zil_sqftZ = i.text.split(' ')[0]
             else:
                 pass
-        zil_sqftZ_clean = zil_sqftZ.replace(",","")
+        zil_sqftZ_clean = zil_sqftZ.replace(",","").replace("-","")
 
         x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ_clean, url = zil_url)
         test_list.append(x)
     for i in test_list:
-        print('street address:',i.streetAddress)
-        print('city id: ',i.city)
-        print('price: ',i.price)
-        print('beds: ',i.beds)
-        print('baths: ',i.baths)
-        print('sqft: ',i.sqft)
-        print('price/sqft: ',i.price_sqft)
-        print('URL: ',i.url)
-        print("*"*20)
-
-        # apartments_insert(i)
+        # print('street address:',i.streetAddress)
+        # print('city id: ',i.city)
+        # print('price: ',i.price)
+        # print('beds: ',i.beds)
+        # print('baths: ',i.baths)
+        # print('sqft: ',i.sqft)
+        # print('price/sqft: ',i.price_sqft)
+        # print('URL: ',i.url)
+        # print("*"*20)
+        apartments_insert(i)
 #end of crawling Zillow for homes
 
 def graph_1(city_id): #pass in a list containing prices & a list containing sq ft
@@ -278,20 +281,20 @@ def graph_1(city_id): #pass in a list containing prices & a list containing sq f
 
     conn = sqlite3.connect(DBNAME)
     cur = conn.cursor()
-    statement = "SELECT Price "
+    statement = "SELECT Price, SQFT "
     statement += "FROM Apartments "
     statement += "WHERE City = '{}'".format(city_id)
     cur.execute(statement)
     for i in cur:
         price_list.append(i[0])
-        # some other variable(s)
+        sqft_list.append(i[1])
     conn.close()
 
     # Create a trace
     trace = go.Scatter(
         # x = [450000,235000,171800],
         x = price_list,
-        y = [2700,1308,860,743,2600,108,960,850],
+        y = sqft_list,
         mode = 'markers'
     )
 
@@ -320,7 +323,7 @@ if __name__ == "__main__":
                     state = city_input.split('-')[1]
                     find = cities_id(city,state) #holds the id of the relevant Cities record in DB
                     # print(find)
-                    home_prices(city_input,find)
+                    apartment_prices(city_input,find)
                 if city_input.lower() == 'exit':
                     break
 
