@@ -28,8 +28,6 @@ class TestData(unittest.TestCase):
         statement2 = "INSERT into Cities VALUES (Null, '{}', '{}')".format(city2,state2)
         cur.execute(statement2)
         conn.commit()
-        # conn = sqlite3.connect(DBNAME)
-        # cur = conn.cursor()
         statement = "SELECT Id from Cities WHERE Name='{}'".format(city2)
         cur.execute(statement)
         for i in cur:
