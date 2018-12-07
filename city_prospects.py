@@ -20,16 +20,18 @@ except:
 
 #start of class for capturing Zillow home details
 class ZillowHome():
-    def __init__(self, streetAddress, city=None, beds=None, baths=None, rooms=None, sqft=None, price=None, price_sqft=None, est_mortgage=None, url=None):
+    # def __init__(self, streetAddress, city=None, beds=None, baths=None, rooms=None, sqft=None, price=None, price_sqft=None, est_mortgage=None, url=None):
+    def __init__(self, streetAddress, city=None, beds=None, baths=None, sqft=None, price=None, url=None):
         self.streetAddress = streetAddress
         self.city = city
         self.beds = beds
         self.baths = baths
-        self.rooms = rooms
         self.sqft = sqft
         self.price = price
-        self.price_sqft = price_sqft
-        # self.est_mortgage = est_mortgage
+        if (self.sqft.isdigit() and self.price.isdigit()):
+            self.price_sqft = round(int(self.price)/int(self.sqft),3)
+        else:
+            self.price_sqft = "NA"
         self.url = url
 
     def __str__(self):
@@ -151,9 +153,9 @@ def apartments_insert(house):
     cur = conn.cursor()
 
     try:
-        insertion = (None, house.streetAddress, house.city, house.price)
+        insertion = (None, house.streetAddress, house.city, house.price, house.beds, house.baths, house.SQFT, house.price_sqft, house.URL)
         statement = 'INSERT into Apartments '
-        statement += 'VALUES (?,?,?,?)'
+        statement += 'VALUES (?,?,?,?,?,?,?,?,?)'
         cur.execute(statement,insertion)
         conn.commit()
     except Exception as e:
@@ -220,6 +222,7 @@ def home_prices(city,city_id):
         zil_priceX = home_soup.find(class_ ="zsg-lg-1-3 zsg-md-1-1 hdp-summary")
         zil_priceY = zil_priceX.find(class_ ="main-row home-summary-row")
         zil_price = zil_priceY.find(class_ ="").contents[0] #here's the actual price
+        zil_price_clean = zil_price.replace("+","").replace("$","").replace(" ","").replace(",", "")
 
         #FINDING BEDS
         facts_expandable = home_soup.find(class_ ="hdp-facts-expandable-container clear") #one large section starting with 'Facts and Features'
@@ -249,22 +252,22 @@ def home_prices(city,city_id):
                 zil_sqftZ = i.text.split(' ')[0]
             else:
                 pass
+        zil_sqftZ_clean = zil_sqftZ.replace(",","")
 
-        x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ, url = zil_url)
+        x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ_clean, url = zil_url)
         test_list.append(x)
     for i in test_list:
-    #     print('street address:',i.streetAddress)
-    #     print('city id: ',i.city)
-    #     print('price: ',i.price)
-    #     print('beds: ',i.beds)
-    #     print('baths: ',i.baths)
-    #     print('sqft: ',i.sqft)
-    #     print('URL: ',i.url)
-    #     print("*"*20)
+        print('street address:',i.streetAddress)
+        print('city id: ',i.city)
+        print('price: ',i.price)
+        print('beds: ',i.beds)
+        print('baths: ',i.baths)
+        print('sqft: ',i.sqft)
+        print('price/sqft: ',i.price_sqft)
+        print('URL: ',i.url)
+        print("*"*20)
 
-        apartments_insert(i)
-
-
+        # apartments_insert(i)
 #end of crawling Zillow for homes
 
 def graph_1(city_id): #pass in a list containing prices & a list containing sq ft
