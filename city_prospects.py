@@ -186,82 +186,165 @@ def check_cache(url):
 def apartment_prices(city,city_id):
     city_id = city_id
 
-    zil_base_url = 'https://www.zillow.com/homes/for_rent'
-    zil_city_url = zil_base_url+"/"+city
-    city_in_cache = check_cache(zil_city_url)
-    city_soup = BeautifulSoup(city_in_cache,'html.parser')
-    photo_cards = city_soup.find(class_="photo-cards")
-    test_list = []
-    url_list = []
-
-    for i in photo_cards:
+    for i in range(0,9):
         try:
-            home_url = i.a['href']
-            if 'homedetails'in home_url:
-                zil_home_url = zil_base_url+home_url
-                url_list.append(zil_home_url)
-            else:
-                pass
+            page = i+1
+
+            zil_base_url = 'https://www.zillow.com/homes/for_rent'
+            zil_city_url = zil_base_url+"/"+city+"/"+str(page)+"_p"
+            city_in_cache = check_cache(zil_city_url)
+            city_soup = BeautifulSoup(city_in_cache,'html.parser')
+            photo_cards = city_soup.find(class_="photo-cards")
+            test_list = []
+            url_list = []
+
+            for i in photo_cards:
+                try:
+                    home_url = i.a['href']
+                    if 'homedetails'in home_url:
+                        zil_home_url = zil_base_url+home_url
+                        url_list.append(zil_home_url)
+                    else:
+                        pass
+                except Exception as e:
+                    # print('Error: ',e)
+                    pass
+            for i in url_list:
+                home_in_cache = check_cache(i)
+                home_soup = BeautifulSoup(home_in_cache,'html.parser')
+
+                zil_url = i #here's apt URL
+
+                #FINDING STREET ADDRESS
+                zil_streetAddressX = home_soup.find(class_ = "zsg-content-header addr")
+                zil_streetAddressY = zil_streetAddressX.find('h1')
+                zil_streetAddressZ = str(zil_streetAddressY.contents[0]) #here's the actual street address
+                zil_streetAddress_clean = zil_streetAddressZ.strip()
+                if zil_streetAddress_clean[-1] == ',':
+                    zil_streetAddress_cleaner = zil_streetAddress_clean[:-1]
+                else:
+                    zil_streetAddress_cleaner = zil_streetAddress_clean
+
+                #FINDING PRICE
+                zil_priceX = home_soup.find(class_ ="zsg-lg-1-3 zsg-md-1-1 hdp-summary")
+                zil_priceY = zil_priceX.find(class_ ="main-row home-summary-row")
+                zil_price = zil_priceY.find(class_ ="").contents[0] #here's the actual price
+                zil_price_clean = zil_price.replace("+","").replace("$","").replace(" ","").replace(",", "")
+
+                #FINDING BEDS
+                facts_expandable = home_soup.find(class_ ="hdp-facts-expandable-container clear") #one large section starting with 'Facts and Features'
+                facts_columns = facts_expandable.find_all(class_ = "hdp-fact-container-columns") #multiple subsections containing grouped details on apt
+                for i in facts_columns: #iterate through various subsections e.g. 'RENTAL FACTS' or 'INTERIOR FEATURES'
+                    fact_category = i.find(class_ = "hdp-fact-category") #grab all 'fact categories' a.k.a. apt details
+                    try:
+                        if fact_category.text == 'Bedrooms': #find apt detail with given title
+                            zil_beds = fact_category.parent.find(class_="hdp-fact-value").text #go back up one level to grab actual value for apt detail with given title above
+                    except:
+                        pass
+
+                #FINDING BATHS
+                zil_bathsX = home_soup.find(class_ = "zsg-content-header addr")
+                zil_bathsY = zil_bathsX.find_all(class_="addr_bbs")
+                for i in zil_bathsY:
+                    if 'bath' in i.text:
+                        zil_bathsZ = i.text.split(' ')[0]
+                    else:
+                        pass
+
+                #FINDING SQFT
+                zil_sqftX = home_soup.find(class_ = "zsg-content-header addr")
+                zil_sqftY = zil_sqftX.find_all(class_="addr_bbs")
+                for i in zil_sqftY:
+                    if 'sqft' in i.text:
+                        zil_sqftZ = i.text.split(' ')[0]
+                    else:
+                        pass
+                zil_sqftZ_clean = zil_sqftZ.replace(",","").replace("-","")
+
+                x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ_clean, url = zil_url)
+                print(x)
+                test_list.append(x)
+            for i in test_list:
+                apartments_insert(i)
         except Exception as e:
-            # print('Error: ',e)
-            pass
-    for i in url_list:
-        home_in_cache = check_cache(i)
-        home_soup = BeautifulSoup(home_in_cache,'html.parser')
+            print('Error crawling pages',e)
 
-        zil_url = i #here's apt URL
-
-        #FINDING STREET ADDRESS
-        zil_streetAddressX = home_soup.find(class_ = "zsg-content-header addr")
-        zil_streetAddressY = zil_streetAddressX.find('h1')
-        zil_streetAddressZ = str(zil_streetAddressY.contents[0]) #here's the actual street address
-        zil_streetAddress_clean = zil_streetAddressZ.strip()
-        if zil_streetAddress_clean[-1] == ',':
-            zil_streetAddress_cleaner = zil_streetAddress_clean[:-1]
-        else:
-            zil_streetAddress_cleaner = zil_streetAddress_clean
-
-        #FINDING PRICE
-        zil_priceX = home_soup.find(class_ ="zsg-lg-1-3 zsg-md-1-1 hdp-summary")
-        zil_priceY = zil_priceX.find(class_ ="main-row home-summary-row")
-        zil_price = zil_priceY.find(class_ ="").contents[0] #here's the actual price
-        zil_price_clean = zil_price.replace("+","").replace("$","").replace(" ","").replace(",", "")
-
-        #FINDING BEDS
-        facts_expandable = home_soup.find(class_ ="hdp-facts-expandable-container clear") #one large section starting with 'Facts and Features'
-        facts_columns = facts_expandable.find_all(class_ = "hdp-fact-container-columns") #multiple subsections containing grouped details on apt
-        for i in facts_columns: #iterate through various subsections e.g. 'RENTAL FACTS' or 'INTERIOR FEATURES'
-            fact_category = i.find(class_ = "hdp-fact-category") #grab all 'fact categories' a.k.a. apt details
-            try:
-                if fact_category.text == 'Bedrooms': #find apt detail with given title
-                    zil_beds = fact_category.parent.find(class_="hdp-fact-value").text #go back up one level to grab actual value for apt detail with given title above
-            except:
-                pass
-
-        #FINDING BATHS
-        zil_bathsX = home_soup.find(class_ = "zsg-content-header addr")
-        zil_bathsY = zil_bathsX.find_all(class_="addr_bbs")
-        for i in zil_bathsY:
-            if 'bath' in i.text:
-                zil_bathsZ = i.text.split(' ')[0]
-            else:
-                pass
-
-        #FINDING SQFT
-        zil_sqftX = home_soup.find(class_ = "zsg-content-header addr")
-        zil_sqftY = zil_sqftX.find_all(class_="addr_bbs")
-        for i in zil_sqftY:
-            if 'sqft' in i.text:
-                zil_sqftZ = i.text.split(' ')[0]
-            else:
-                pass
-        zil_sqftZ_clean = zil_sqftZ.replace(",","").replace("-","")
-
-        x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ_clean, url = zil_url)
-        print(x)
-        test_list.append(x)
-    for i in test_list:
-        apartments_insert(i)
+    # zil_base_url = 'https://www.zillow.com/homes/for_rent'
+    # zil_city_url = zil_base_url+"/"+city
+    # city_in_cache = check_cache(zil_city_url)
+    # city_soup = BeautifulSoup(city_in_cache,'html.parser')
+    # photo_cards = city_soup.find(class_="photo-cards")
+    # test_list = []
+    # url_list = []
+    #
+    # for i in photo_cards:
+    #     try:
+    #         home_url = i.a['href']
+    #         if 'homedetails'in home_url:
+    #             zil_home_url = zil_base_url+home_url
+    #             url_list.append(zil_home_url)
+    #         else:
+    #             pass
+    #     except Exception as e:
+    #         # print('Error: ',e)
+    #         pass
+    # for i in url_list:
+    #     home_in_cache = check_cache(i)
+    #     home_soup = BeautifulSoup(home_in_cache,'html.parser')
+    #
+    #     zil_url = i #here's apt URL
+    #
+    #     #FINDING STREET ADDRESS
+    #     zil_streetAddressX = home_soup.find(class_ = "zsg-content-header addr")
+    #     zil_streetAddressY = zil_streetAddressX.find('h1')
+    #     zil_streetAddressZ = str(zil_streetAddressY.contents[0]) #here's the actual street address
+    #     zil_streetAddress_clean = zil_streetAddressZ.strip()
+    #     if zil_streetAddress_clean[-1] == ',':
+    #         zil_streetAddress_cleaner = zil_streetAddress_clean[:-1]
+    #     else:
+    #         zil_streetAddress_cleaner = zil_streetAddress_clean
+    #
+    #     #FINDING PRICE
+    #     zil_priceX = home_soup.find(class_ ="zsg-lg-1-3 zsg-md-1-1 hdp-summary")
+    #     zil_priceY = zil_priceX.find(class_ ="main-row home-summary-row")
+    #     zil_price = zil_priceY.find(class_ ="").contents[0] #here's the actual price
+    #     zil_price_clean = zil_price.replace("+","").replace("$","").replace(" ","").replace(",", "")
+    #
+    #     #FINDING BEDS
+    #     facts_expandable = home_soup.find(class_ ="hdp-facts-expandable-container clear") #one large section starting with 'Facts and Features'
+    #     facts_columns = facts_expandable.find_all(class_ = "hdp-fact-container-columns") #multiple subsections containing grouped details on apt
+    #     for i in facts_columns: #iterate through various subsections e.g. 'RENTAL FACTS' or 'INTERIOR FEATURES'
+    #         fact_category = i.find(class_ = "hdp-fact-category") #grab all 'fact categories' a.k.a. apt details
+    #         try:
+    #             if fact_category.text == 'Bedrooms': #find apt detail with given title
+    #                 zil_beds = fact_category.parent.find(class_="hdp-fact-value").text #go back up one level to grab actual value for apt detail with given title above
+    #         except:
+    #             pass
+    #
+    #     #FINDING BATHS
+    #     zil_bathsX = home_soup.find(class_ = "zsg-content-header addr")
+    #     zil_bathsY = zil_bathsX.find_all(class_="addr_bbs")
+    #     for i in zil_bathsY:
+    #         if 'bath' in i.text:
+    #             zil_bathsZ = i.text.split(' ')[0]
+    #         else:
+    #             pass
+    #
+    #     #FINDING SQFT
+    #     zil_sqftX = home_soup.find(class_ = "zsg-content-header addr")
+    #     zil_sqftY = zil_sqftX.find_all(class_="addr_bbs")
+    #     for i in zil_sqftY:
+    #         if 'sqft' in i.text:
+    #             zil_sqftZ = i.text.split(' ')[0]
+    #         else:
+    #             pass
+    #     zil_sqftZ_clean = zil_sqftZ.replace(",","").replace("-","")
+    #
+    #     x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ_clean, url = zil_url)
+    #     print(x)
+    #     test_list.append(x)
+    # for i in test_list:
+    #     apartments_insert(i)
 #end of crawling Zillow for homes
 
 #start of sample graph_1
