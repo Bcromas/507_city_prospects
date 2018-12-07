@@ -1,5 +1,4 @@
 #507 final project
-#Compare housing costs, startup environment, and cost of living between three U.S. cities.
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -259,23 +258,15 @@ def apartment_prices(city,city_id):
         zil_sqftZ_clean = zil_sqftZ.replace(",","").replace("-","")
 
         x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ_clean, url = zil_url)
+        print(x)
         test_list.append(x)
     for i in test_list:
-        # print('street address:',i.streetAddress)
-        # print('city id: ',i.city)
-        # print('price: ',i.price)
-        # print('beds: ',i.beds)
-        # print('baths: ',i.baths)
-        # print('sqft: ',i.sqft)
-        # print('price/sqft: ',i.price_sqft)
-        # print('URL: ',i.url)
-        # print("*"*20)
         apartments_insert(i)
 #end of crawling Zillow for homes
 
+#start of sample graph_1
 def graph_1(city_id): #pass in a list containing prices & a list containing sq ft
 
-    # print('here is yo city',city_id)
     price_list = []
     sqft_list = []
 
@@ -302,6 +293,7 @@ def graph_1(city_id): #pass in a list containing prices & a list containing sq f
 
     #plot
     plot_url = py.plot(data, filename='basic-line')
+#end of sample graph_1
 
 if __name__ == "__main__":
     while True:
