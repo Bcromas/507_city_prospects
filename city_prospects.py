@@ -435,12 +435,11 @@ def graph_2(city_id):
 
 #start of graph_3 - stacked bar chart using rent
 def graph_3(city_idA, city_idB):
-    # print('made it to graph_3', city_idA, city_idB)
 
     price_listA = []
     price_listB = []
 
-    # rent category = [counta, countb]
+    # category = [counta, countb]
     price_0_800 = [0,0]
     price_801_1000 = [0,0]
     price_1001_1500 = [0,0]
@@ -505,8 +504,6 @@ def graph_3(city_idA, city_idB):
             price_2001[1] += 1
     #iterate through rent prices for city B & tally up counts in rent categories
 
-    # print(price_0_800, price_801_1000, price_1001_1500, price_1501_2000, price_2001)
-
     #Grab cityA name from DB
     try:
         conn = sqlite3.connect(DBNAME)
@@ -552,7 +549,6 @@ def graph_3(city_idA, city_idB):
     name = '<=800'
     )
 
-
     #trace2
     trace2 = go.Bar(
     x = [cityA_str, cityB_str],
@@ -561,7 +557,6 @@ def graph_3(city_idA, city_idB):
         color='rgb(0, 172, 234)'),
     name = '801 to 1000'
     )
-
 
     #trace3
     trace3 = go.Bar(
@@ -572,7 +567,6 @@ def graph_3(city_idA, city_idB):
     name = '1000 to 1500'
     )
 
-
     #trace4
     trace4 = go.Bar(
     x = [cityA_str, cityB_str],
@@ -581,7 +575,6 @@ def graph_3(city_idA, city_idB):
         color='rgb(248, 92, 54)'),
     name = '1501 to 2000'
     )
-
 
     #trace5
     trace5 = go.Bar(
@@ -592,14 +585,17 @@ def graph_3(city_idA, city_idB):
     name = '2000+'
     )
 
-
     data = [trace1, trace2, trace3, trace4, trace5]
     layout = go.Layout(
-            barmode='stack'
+            barmode='stack',
+            title = "<b>Stacked Bars for Rent in {} & {}</b>".format(cityA_str, cityB_str),
+            titlefont=dict(
+                        size=20
+                    )
             )
 
     fig = go.Figure(data=data, layout=layout)
-    py.plot(fig, filename='stacked-bar')
+    py.plot(fig, filename='Stacked Bars {}-{}'.format(cityA_str, cityB_str))
 
 #end of graph_3
 
@@ -677,7 +673,7 @@ if __name__ == "__main__":
         #input to visualize data on apts
         if main_input.lower() == 'visuals':
             while True:
-                visuals_input = input('\nSelect a visualization option:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - SOMETHING\n4 - SOMETHING\n\n')
+                visuals_input = input('\nSelect a visualization option:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - stacked bars comparing rent in 2 cities\n4 - SOMETHING\n\n')
 
                 #generate scatter or box plot of rent & SQFT for selected city
                 if (visuals_input.lower() == '1' or visuals_input.lower() == '2') :
