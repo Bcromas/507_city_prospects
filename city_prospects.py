@@ -528,10 +528,10 @@ if __name__ == "__main__":
         main_input = input('\nPlease enter a command (or "help" for options): ')
         #start up greeting
 
-        #input to exit program
+        #input to return to previous screen or exit program
         if main_input.lower() == 'exit':
             break
-        #input to exit program
+        #input to return to previous screen or exit program
 
         #input to access help
         if main_input.lower() == 'help':
@@ -568,8 +568,39 @@ if __name__ == "__main__":
         if main_input.lower() == 'visuals':
             while True:
                 visuals_input = input('\nSelect an option:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - SOMETHING\n4 - SOMETHING\n\n')
-                if 'yes' in visuals_input:
-                    print('ok!')
+
+                #generate scatter plot of rent & SQFT for selected city
+                if visuals_input.lower() == '1':
+                        while True:
+                            graph1_input = input('Which city would you like to plot?\nPlease enter in format {City Name}-{State Abbrev}\n\n')
+                            if '-' in graph1_input:
+                                city = graph1_input.split('-')[0]
+                                state = graph1_input.split('-')[1]
+                                try:
+                                    conn = sqlite3.connect(DBNAME)
+                                    cur = conn.cursor()
+                                    statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
+                                    cur.execute(statement)
+                                    x = cur.fetchall()
+                                    city_id = x[0][0]
+                                    graph_1(city_id)
+                                except Exception as e:
+                                    print("Error querying DB: ",e)
+                                    conn.close()
+
+                            #input to return to previous screen or exit program
+                            if graph1_input.lower() == 'exit':
+                                break
+
+                            #input to access help
+                            if graph1_input.lower() == 'help':
+                                while True:
+                                    help_print = input(help_text)
+                                    if help_print.lower() == 'exit':
+                                        break
+                            #input to access help
+
+
                 elif visuals_input.lower() == 'exit':
                     break
                 elif visuals_input.lower() == 'help':
@@ -577,5 +608,21 @@ if __name__ == "__main__":
                         help_print = input(help_text)
                         if help_print.lower() == 'exit':
                             break
+                #generate scatter plot of rent & SQFT for selected city
+
+                #generate box plots of rent & SQFT for selected city
+                if visuals_input.lower() == '2':
+                    pass
+                #generate box plots of rent & SQFT for selected city
+
+                #SOMETHING
+                if visuals_input.lower() == '3':
+                    pass
+                #SOMETHING
+
+                #SOMETHING
+                if visuals_input.lower() == '4':
+                    pass
+                #SOMETHING
 
         #input to visualize data on apts
