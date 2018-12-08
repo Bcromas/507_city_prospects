@@ -332,11 +332,11 @@ def graph_1(city_id):
 
     data = [trace]
 
-    fig = dict(data=data, layout=layout) #wasn't in original working version
+    fig = dict(data=data, layout=layout)
 
     #plot
     # plot_url = py.plot(data, filename='basic-line')
-    py.plot(fig, filename='UPDATED')
+    py.plot(fig, filename="Rent SQFT Apts {}".format(city_name))
 #end of graph_1
 
 #start of graph_2
@@ -356,20 +356,52 @@ def graph_2(city_id):
         sqft_list.append(i[1])
     conn.close()
 
+    #Grab city name from DB
+    conn = sqlite3.connect(DBNAME)
+    cur = conn.cursor()
+    statement = "SELECT Name, State "
+    statement += "FROM Cities "
+    statement += "WHERE Id = '{}'".format(city_id)
+    cur.execute(statement)
+    x = cur.fetchall()
+    city_name = x[0][0]
+    state_name = x[0][1]
+    conn.close()
+
     # Create a trace
-    trace = go.Scatter(
-        # x = [450000,235000,171800],
-        x = price_list,
-        y = sqft_list,
-        mode = 'markers'
+    trace0 = go.Box(
+    y = price_list,
+    name = '<b>Rent</b>',
+    marker = dict(
+        color = "rgb(67, 164, 20)",
+    )
+    )
+    trace1 = go.Box(
+    y = sqft_list,
+    name = '<b>Square Feet</b>',
+    marker = dict(
+        color = "rgb(248, 92, 54)",
+    )
     )
 
-    data = [trace]
+    data = [trace0, trace1]
 
-    #plot
-    plot_url = py.plot(data, filename='basic-line')
+    layout = dict (
+    title = "<b>Box Plots for Rent & Square Footage in {}, {}</b>".format(city_name, state_name),
+    titlefont=dict(
+                size=20
+            )
+    )
+
+    fig = dict(data=data, layout=layout)
+    py.plot(fig, filename="Box Plots Rent SQFT {}".format(city_name))
 #end of graph_2
 
+def graph_3():
+    pass
+
+def graph_4():
+    pass
 
 
 if __name__ == "__main__":
@@ -391,7 +423,6 @@ if __name__ == "__main__":
                     city = city_input.split('-')[0]
                     state = city_input.split('-')[1]
                     find = cities_id(city,state) #holds the id of the relevant Cities record in DB
-                    # print(find)
                     apartment_prices(city_input,find)
                 if city_input.lower() == 'exit':
                     break
@@ -414,6 +445,34 @@ if __name__ == "__main__":
                         print("Error querying DB: ",e)
                         conn.close()
 
-                        # graph_1()
                 if graph1_input.lower() == 'exit':
+                    break
+
+        elif user_input.lower() == 'graph_2':
+            while True:
+                graph2_input = input('Which city would you like to plot?\nPlease enter in format {City Name}-{State Abbrev}: ')
+                if '-' in graph2_input:
+                    city = graph2_input.split('-')[0]
+                    state = graph2_input.split('-')[1]
+                    # try:
+                    #     conn = sqlite3.connect(DBNAME)
+                    #     cur = conn.cursor()
+                    #     statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
+                    #     cur.execute(statement)
+                    #     x = cur.fetchall()
+                    #     city_id = x[0][0]
+                    #     graph_2(city_id)
+                    # except Exception as e:
+                    #     print("Error querying DB: ",e)
+                    #     conn.close()
+                    conn = sqlite3.connect(DBNAME)
+                    cur = conn.cursor()
+                    statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
+                    cur.execute(statement)
+                    x = cur.fetchall()
+                    city_id = x[0][0]
+                    graph_2(city_id)
+                    conn.close()
+
+                if graph2_input.lower() == 'exit':
                     break
