@@ -435,18 +435,21 @@ def graph_2(city_id):
 
 #start of graph_3 - stacked bar chart using rent
 def graph_3(city_idA, city_idB):
-    print('made it to graph_3', city_idA, city_idB)
+    # print('made it to graph_3', city_idA, city_idB)
+
+    price_listA = []
 
     conn = sqlite3.connect(DBNAME)
     cur = conn.cursor()
-    statement = "SELECT Price, SQFT "
+    statement = "SELECT Price "
     statement += "FROM Apartments "
-    statement += "WHERE City = '{}'".format(city_id)
+    statement += "WHERE City = '{}'".format(city_idA)
     cur.execute(statement)
     for i in cur:
-        price_list.append(i[0])
-        sqft_list.append(i[1])
+        price_listA.append(i[0])
     conn.close()
+
+    print(price_listA)        
 
 #end of graph_3
 
