@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import sqlite3
 import plotly.plotly as py
 import plotly.graph_objs as go
+import random
 
 #start of funct to load text from file
 def load_help_text():
@@ -127,6 +128,34 @@ def db_setup(DBNAME):
     #end of attempt to create Apartments table
 #end of funct to setup DB
 
+#start of funct to check if city is in DB
+def check_city(city,state):
+    city_id = 0
+    conn = sqlite3.connect(DBNAME)
+    cur = conn.cursor()
+    statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
+    cur.execute(statement)
+    x = cur.fetchall()
+    city_id = x[0][0]
+
+    return city_id
+    conn.close()
+#end of funct to check if city is in DB
+
+#start of funct to pull random city id
+def rando_city():
+    existing_cities = []
+    conn = sqlite3.connect(DBNAME)
+    cur = conn.cursor()
+    statement = "SELECT Id from Cities"
+    cur.execute(statement)
+    for i in cur:
+        existing_cities.append(i)
+    conn.close()
+    x = random.choice(existing_cities)
+    return x[0]
+#end of funct to pull random city id
+
 #start of funct to check DB for city, insert if needed, & return Cities record ID
 def cities_id(city, state):
     conn = sqlite3.connect(DBNAME)
@@ -198,6 +227,7 @@ def apartment_prices(city,city_id):
 
             zil_base_url = 'https://www.zillow.com/homes/for_rent'
             zil_city_url = zil_base_url+"/"+city+"/"+str(page)+"_p"
+            print('URL to crawl: ',zil_city_url)
             city_in_cache = check_cache(zil_city_url)
             city_soup = BeautifulSoup(city_in_cache,'html.parser')
             photo_cards = city_soup.find(class_="photo-cards")
@@ -403,12 +433,27 @@ def graph_2(city_id):
     py.plot(fig, filename="Box Plots Rent SQFT {}".format(city_name))
 #end of graph_2
 
-def graph_3():
-    pass
+#start of graph_3 - stacked bar chart using rent
+def graph_3(city_idA, city_idB):
+    print('made it to graph_3', city_idA, city_idB)
 
-def graph_4():
-    pass
+    conn = sqlite3.connect(DBNAME)
+    cur = conn.cursor()
+    statement = "SELECT Price, SQFT "
+    statement += "FROM Apartments "
+    statement += "WHERE City = '{}'".format(city_id)
+    cur.execute(statement)
+    for i in cur:
+        price_list.append(i[0])
+        sqft_list.append(i[1])
+    conn.close()
 
+#end of graph_3
+
+#start of graph_4
+def graph_4(city_idA, city_idB):
+    print('made it to graph_4', city_idA, city_idB)
+#end of graph_4
 
 if __name__ == "__main__":
     while True:
@@ -479,23 +524,24 @@ if __name__ == "__main__":
         #input to visualize data on apts
         if main_input.lower() == 'visuals':
             while True:
-                visuals_input = input('\nSelect an option:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - SOMETHING\n4 - SOMETHING\n\n')
+                visuals_input = input('\nSelect a visualization option:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - SOMETHING\n4 - SOMETHING\n\n')
 
                 #generate scatter or box plot of rent & SQFT for selected city
                 if (visuals_input.lower() == '1' or visuals_input.lower() == '2') :
                         while True:
-                            graph_input = input('Which city would you like to plot?\nPlease enter in format {City Name}-{State Abbrev}\n\n')
+                            graph_input = input('Which city would you like to plot?\nPlease enter in format {city name}-{state abbrev}\n\n')
 
                             if '-' in graph_input:
                                 city = graph_input.split('-')[0]
                                 state = graph_input.split('-')[1]
                                 try:
-                                    conn = sqlite3.connect(DBNAME)
-                                    cur = conn.cursor()
-                                    statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
-                                    cur.execute(statement)
-                                    x = cur.fetchall()
-                                    city_id = x[0][0]
+                                    # conn = sqlite3.connect(DBNAME)
+                                    # cur = conn.cursor()
+                                    # statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
+                                    # cur.execute(statement)
+                                    # x = cur.fetchall()
+                                    # city_id = x[0][0]
+                                    city_id = check_city(city,state)
 
                                     if visuals_input == '1':
                                         graph_1(city_id)
@@ -503,7 +549,7 @@ if __name__ == "__main__":
                                         graph_2(city_id)
                                 except:
                                     print("\nCould not visualize '{}'. Please try adding a city from main menu or try an available city.\n\n".format(graph_input))
-                                    conn.close()
+                                    # conn.close()
 
                             #input to return to previous screen or exit program
                             if graph_input.lower() == 'exit':
@@ -518,17 +564,49 @@ if __name__ == "__main__":
                             #input to access help
                 #generate scatter or box plot of rent & SQFT for selected city
 
-                #SOMETHING
+                #generate stacked bar chart using rent or summary table comparing cities
                 if (visuals_input.lower() == '3' or visuals_input.lower() == '4') :
                     while True:
-                        graph_inputA = input('cityA')
+                        #start funct to find cityA
+                        graph_inputA = input('\nEnter your 1st city in format {city name}-{state abbrev} or try "random".\n\n')
                         if graph_inputA == 'exit':
                             break
+                        if '-' in graph_inputA:
+                            city = graph_inputA.split('-')[0]
+                            state = graph_inputA.split('-')[1]
+                            try:
+                                city_idA = check_city(city,state)
+                            except Exception as e:
+                                print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n\n".format(graph_inputA))
+                                conn.close()
+                        if graph_inputA == "random":
+                            city_idA = rando_city()
+                        #end funct to find cityA
 
-                        graph_inputB = input('cityB')
+                        #start funct to find cityB
+                        graph_inputB = input('\nEnter your 2nd city in format {city name}-{state abbrev} or try "random".\n\n')
                         if graph_inputB == 'exit':
                             break
-                #SOMETHING
+                        if '-' in graph_inputB:
+                            city = graph_inputB.split('-')[0]
+                            state = graph_inputB.split('-')[1]
+                            try:
+                                city_idB = check_city(city,state)
+                            except Exception as e:
+                                print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n\n".format(graph_inputB))
+                                conn.close()
+                        if graph_inputB == "random":
+                            city_idB = rando_city()
+                        #end funct to find cityB
+
+                        # print(city_idA, city_idB)
+                        if visuals_input == '3':
+                            graph_3(city_idA, city_idB)
+                        elif visuals_input == '4':
+                            graph_4(city_idA, city_idB)
+
+
+                #generate stacked bar chart using rent or summary table comparing cities
 
                 elif visuals_input.lower() == 'exit':
                     break
