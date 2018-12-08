@@ -1,0 +1,9 @@
+
+***Help/Command Menu***
+
+'add city': crawl & scrape Zillow.com for apartments in a given city.
+
+'visuals': view data on a single city or compare two cities. Options include a scatterplot of rent & square feet for a city, box plots showing rent & square feet for a city...ADD MORE
+
+'exit': return to previous screen or exit program if at main menu.
+ 

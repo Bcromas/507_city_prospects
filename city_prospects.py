@@ -6,6 +6,12 @@ import sqlite3
 import plotly.plotly as py
 import plotly.graph_objs as go
 
+#start of funct to load text from file
+def load_help_text():
+    with open('help.txt') as f:
+        return f.read()
+#end of funct to load text from file
+
 #caching functionality
 CACHE_FNAME = 'final_proj_CACHE.json'
 try:
@@ -169,10 +175,10 @@ def apartments_insert(house):
 def check_cache(url):
 
     if url in CACHE_DICT:
-        print("Retrieving from cache...")
+        # print("Retrieving from cache...")
         return CACHE_DICT[url]
     else:
-        print("Retrieving from site...")
+        # print("Retrieving from site...")
         resp = requests.get(url, headers={'User-Agent': 'SI_CLASS'})
         CACHE_DICT[url] = resp.text
         dumped_json_cache = json.dumps(CACHE_DICT)
@@ -262,7 +268,7 @@ def apartment_prices(city,city_id):
                 zil_sqftZ_clean = zil_sqftZ.replace(",","").replace("-","")
 
                 x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ_clean, url = zil_url)
-                print(x)
+                # print(x)
                 test_list.append(x)
             for i in test_list:
                 apartments_insert(i)
@@ -405,74 +411,171 @@ def graph_4():
 
 
 if __name__ == "__main__":
+    # while True:
+    #
+    #     #code to query which cities in DB
+    #     cities_avail = []
+    #     conn = sqlite3.connect(DBNAME)
+    #     cur = conn.cursor()
+    #     statement = "SELECT Cities.Name, Cities.State, Count(*) "
+    #     statement += "FROM Apartments "
+    #     statement += "LEFT JOIN Cities on Apartments.City == Cities.Id "
+    #     statement += "GROUP BY City "
+    #     statement += "ORDER BY Cities.Name"
+    #     cur.execute(statement)
+    #     for i in cur:
+    #         cities_avail.append(i)
+    #     conn.close()
+    #
+    #     print('\nWELCOME TO CITY PROSPECTS\n\n--Review rental details for U.S. Cities--\n\nAvailable:\nCity-State (#apts)\n')
+    #     for i in cities_avail:
+    #         print('{}-{} ({})'.format(i[0],i[1],i[2]))
+    #
+    #     user_input = input('\nPlease enter a command (or "help" for options): ')
+    #
+    #     if user_input.lower() == 'exit':
+    #         break
+    #
+    #     if user_input.lower() == 'help':
+    #         print('\n\tdb_setup\n\t\tclears DB & re-builds tables\n\tcity_insert\n\t\tcrawls & scrapes Zillow.com for apartments in given city\n\tgraph_#\n\t\tplots city data\n\texit\n\t\texits the program\n\thelp\n\t\tlists available commands (these instructions)\n')
+    #
+    #     #to be consolidated later as 'start up' funct
+    #     elif user_input.lower() == 'db_setup':
+    #         db_setup(DBNAME)
+    #
+    #     elif user_input.lower() == 'add city':
+    #         while True:
+    #             city_input = input('Enter a new city in format {City Name}-{State Abbrev}: ')
+    #             if '-' in city_input:
+    #                 city = city_input.split('-')[0]
+    #                 state = city_input.split('-')[1]
+    #                 find = cities_id(city,state) #holds the id of the relevant Cities record in DB
+    #                 apartment_prices(city_input,find)
+    #                 break
+    #             if city_input.lower() == 'exit':
+    #                 break
+    #
+    #     elif user_input.lower() == 'graph_1':
+    #         while True:
+    #             graph1_input = input('Which city would you like to plot?\nPlease enter in format {City Name}-{State Abbrev}: ')
+    #             if '-' in graph1_input:
+    #                 city = graph1_input.split('-')[0]
+    #                 state = graph1_input.split('-')[1]
+    #                 try:
+    #                     conn = sqlite3.connect(DBNAME)
+    #                     cur = conn.cursor()
+    #                     statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
+    #                     cur.execute(statement)
+    #                     x = cur.fetchall()
+    #                     city_id = x[0][0]
+    #                     graph_1(city_id)
+    #                 except Exception as e:
+    #                     print("Error querying DB: ",e)
+    #                     conn.close()
+    #
+    #             if graph1_input.lower() == 'exit':
+    #                 break
+    #
+    #     elif user_input.lower() == 'graph_2':
+    #         while True:
+    #             graph2_input = input('Which city would you like to plot?\nPlease enter in format {City Name}-{State Abbrev}: ')
+    #             if '-' in graph2_input:
+    #                 city = graph2_input.split('-')[0]
+    #                 state = graph2_input.split('-')[1]
+    #
+    #                 conn = sqlite3.connect(DBNAME)
+    #                 cur = conn.cursor()
+    #                 statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
+    #                 cur.execute(statement)
+    #                 x = cur.fetchall()
+    #                 city_id = x[0][0]
+    #                 graph_2(city_id)
+    #                 conn.close()
+    #
+    #             if graph2_input.lower() == 'exit':
+    #                 break
     while True:
-        # user_input = input('Please enter a U.S. city and state abbreviation\ne.g. "philadelphia-pa" ')
-        user_input = input('Please enter a command\ne.g. "city_insert" ')
 
-        if user_input.lower() == 'exit':
+        #load help text
+        try:
+            help_text = load_help_text()
+        except Exception as e:
+            print('Issue loading help.txt. Check file is available',e)
+        #load help text
+
+        #code to query city details in DB
+        try:
+            cities_avail = []
+            conn = sqlite3.connect(DBNAME)
+            cur = conn.cursor()
+            statement = "SELECT Cities.Name, Cities.State, Count(*) "
+            statement += "FROM Apartments "
+            statement += "LEFT JOIN Cities on Apartments.City == Cities.Id "
+            statement += "GROUP BY City "
+            statement += "ORDER BY Cities.Name"
+            cur.execute(statement)
+            for i in cur:
+                cities_avail.append(i)
+            conn.close()
+        except Exception as e:
+            print('Issue loading cities from DB',e)
+        #code to query city details in DB
+
+        #start up greeting
+        print('\nWELCOME TO CITY PROSPECTS: Review rental details for U.S. Cities\n\nAvailable cities\n----------------')
+        for i in cities_avail:
+            print('{}-{} ({})'.format(i[0],i[1],i[2]))
+        main_input = input('\nPlease enter a command (or "help" for options): ')
+        #start up greeting
+
+        #input to exit program
+        if main_input.lower() == 'exit':
             break
+        #input to exit program
 
-        #to be consolidated later as 'start up' funct
-        elif user_input.lower() == 'db_setup':
-            db_setup(DBNAME)
-
-        elif user_input.lower() == 'city_insert':
+        #input to access help
+        if main_input.lower() == 'help':
+            # while True:
+            #     help_input = input('\n\tdb_setup\n\t\tclears DB & re-builds tables\n\tcity_insert\n\t\tcrawls & scrapes Zillow.com for apartments in given city\n\tgraph_#\n\t\tplots city data\n\texit\n\t\texits the program\n\thelp\n\t\tlists available commands (these instructions)\n')
+            #
+            #     if help_input.lower() == 'exit':
+            #         break
             while True:
-                city_input = input('Enter your first city in format {City Name}-{State Abbrev}: ')
+                help_print = input(help_text)
+                if help_print.lower() == 'exit':
+                    break
+        #input to access help
+
+        #input to add new city from Zillow
+        if main_input.lower() == 'add city':
+            while True:
+                city_input = input('\nEnter a new city below in the format {City Name}-{State Abbrev}\nNOTE: crawling & scraping Zillow.com takes several minutes\n\n')
                 if '-' in city_input:
                     city = city_input.split('-')[0]
                     state = city_input.split('-')[1]
                     find = cities_id(city,state) #holds the id of the relevant Cities record in DB
                     apartment_prices(city_input,find)
-                if city_input.lower() == 'exit':
+                elif city_input.lower() == 'exit':
                     break
+                elif city_input.lower() == 'help':
+                    while True:
+                        help_print = input(help_text)
+                        if help_print.lower() == 'exit':
+                            break
+        #input to add new city from Zillow
 
-        elif user_input.lower() == 'graph_1':
+        #input to visualize data on apts
+        if main_input.lower() == 'visuals':
             while True:
-                graph1_input = input('Which city would you like to plot?\nPlease enter in format {City Name}-{State Abbrev}: ')
-                if '-' in graph1_input:
-                    city = graph1_input.split('-')[0]
-                    state = graph1_input.split('-')[1]
-                    try:
-                        conn = sqlite3.connect(DBNAME)
-                        cur = conn.cursor()
-                        statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
-                        cur.execute(statement)
-                        x = cur.fetchall()
-                        city_id = x[0][0]
-                        graph_1(city_id)
-                    except Exception as e:
-                        print("Error querying DB: ",e)
-                        conn.close()
-
-                if graph1_input.lower() == 'exit':
+                visuals_input = input('\nSelect an option:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - SOMETHING\n4 - SOMETHING\n\n')
+                if 'yes' in visuals_input:
+                    print('ok!')
+                elif visuals_input.lower() == 'exit':
                     break
+                elif visuals_input.lower() == 'help':
+                    while True:
+                        help_print = input(help_text)
+                        if help_print.lower() == 'exit':
+                            break
 
-        elif user_input.lower() == 'graph_2':
-            while True:
-                graph2_input = input('Which city would you like to plot?\nPlease enter in format {City Name}-{State Abbrev}: ')
-                if '-' in graph2_input:
-                    city = graph2_input.split('-')[0]
-                    state = graph2_input.split('-')[1]
-                    # try:
-                    #     conn = sqlite3.connect(DBNAME)
-                    #     cur = conn.cursor()
-                    #     statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
-                    #     cur.execute(statement)
-                    #     x = cur.fetchall()
-                    #     city_id = x[0][0]
-                    #     graph_2(city_id)
-                    # except Exception as e:
-                    #     print("Error querying DB: ",e)
-                    #     conn.close()
-                    conn = sqlite3.connect(DBNAME)
-                    cur = conn.cursor()
-                    statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
-                    cur.execute(statement)
-                    x = cur.fetchall()
-                    city_id = x[0][0]
-                    graph_2(city_id)
-                    conn.close()
-
-                if graph2_input.lower() == 'exit':
-                    break
+        #input to visualize data on apts
