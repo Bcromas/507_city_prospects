@@ -547,32 +547,53 @@ def graph_3(city_idA, city_idB):
     trace1 = go.Bar(
     x = [cityA_str, cityB_str],
     y = [price_0_800[0],price_0_800[1]],
+    marker=dict(
+        color='rgb(67, 164, 20)'),
     name = '<=800'
     )
+
 
     #trace2
     trace2 = go.Bar(
     x = [cityA_str, cityB_str],
     y = [price_801_1000[0],price_801_1000[1]],
+    marker=dict(
+        color='rgb(0, 172, 234)'),
     name = '801 to 1000'
     )
 
+
     #trace3
-    #x = [cityA name, cityB name]
-    #y = [cityA count, cityB count]
-    #name = '1000 to 1500'
+    trace3 = go.Bar(
+    x = [cityA_str, cityB_str],
+    y = [price_1001_1500[0],price_1001_1500[1]],
+    marker=dict(
+        color='rgb(179, 112, 247)'),
+    name = '1000 to 1500'
+    )
+
 
     #trace4
-    #x = [cityA name, cityB name]
-    #y = [cityA count, cityB count]
-    #name = '1501 to 2000'
+    trace4 = go.Bar(
+    x = [cityA_str, cityB_str],
+    y = [price_1501_2000[0],price_1501_2000[1]],
+    marker=dict(
+        color='rgb(248, 92, 54)'),
+    name = '1501 to 2000'
+    )
+
 
     #trace5
-    #x = [cityA name, cityB name]
-    #y = [cityA count, cityB count]
-    #name = '2000+'
+    trace5 = go.Bar(
+    x = [cityA_str, cityB_str],
+    y = [price_2001[0],price_2001[1]],
+    marker=dict(
+        color='rgb(0,0,0)'),
+    name = '2000+'
+    )
 
-    data = [trace1, trace2]
+
+    data = [trace1, trace2, trace3, trace4, trace5]
     layout = go.Layout(
             barmode='stack'
             )
