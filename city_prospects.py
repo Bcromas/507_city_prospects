@@ -438,18 +438,147 @@ def graph_3(city_idA, city_idB):
     # print('made it to graph_3', city_idA, city_idB)
 
     price_listA = []
+    price_listB = []
 
-    conn = sqlite3.connect(DBNAME)
-    cur = conn.cursor()
-    statement = "SELECT Price "
-    statement += "FROM Apartments "
-    statement += "WHERE City = '{}'".format(city_idA)
-    cur.execute(statement)
-    for i in cur:
-        price_listA.append(i[0])
-    conn.close()
+    # rent category = [counta, countb]
+    price_0_800 = [0,0]
+    price_801_1000 = [0,0]
+    price_1001_1500 = [0,0]
+    price_1501_2000 = [0,0]
+    price_2001 = [0,0]
 
-    print(price_listA)        
+    # rent for cityA
+    try:
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+        statement = "SELECT Price "
+        statement += "FROM Apartments "
+        statement += "WHERE City = '{}'".format(city_idA)
+        cur.execute(statement)
+        for i in cur:
+            price_listA.append(i[0])
+        conn.close()
+    except Exception as e:
+        print('Issue getting rent from DB.',e)
+    # rent for cityA
+
+    # rent for cityB
+    try:
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+        statement = "SELECT Price "
+        statement += "FROM Apartments "
+        statement += "WHERE City = '{}'".format(city_idB)
+        cur.execute(statement)
+        for i in cur:
+            price_listB.append(i[0])
+        conn.close()
+    except Exception as e:
+        print('Issue getting rent from DB.',e)
+    # rent for cityB
+
+    #iterate through rent prices for city A & tally up counts in rent categories
+    for i in price_listA:
+        if i <= 800:
+            price_0_800[0] += 1
+        elif (i > 800 and i <= 1000):
+            price_801_1000[0] += 1
+        elif (i > 1000 and i <= 1500):
+            price_1001_1500[0] += 1
+        elif (i > 1500 and i <= 2000):
+            price_1501_2000[0] += 1
+        elif (i > 2000):
+            price_2001[0] += 1
+    #iterate through rent prices for city A & tally up counts in rent categories
+
+    #iterate through rent prices for city B & tally up counts in rent categories
+    for i in price_listB:
+        if i <= 800:
+            price_0_800[1] += 1
+        elif (i > 800 and i <= 1000):
+            price_801_1000[1] += 1
+        elif (i > 1000 and i <= 1500):
+            price_1001_1500[1] += 1
+        elif (i > 1500 and i <= 2000):
+            price_1501_2000[1] += 1
+        elif (i > 2000):
+            price_2001[1] += 1
+    #iterate through rent prices for city B & tally up counts in rent categories
+
+    # print(price_0_800, price_801_1000, price_1001_1500, price_1501_2000, price_2001)
+
+    #Grab cityA name from DB
+    try:
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+        statement = "SELECT Name, State "
+        statement += "FROM Cities "
+        statement += "WHERE Id = '{}'".format(city_idA)
+        cur.execute(statement)
+        x = cur.fetchall()
+        city_nameA = x[0][0]
+        state_nameA = x[0][1]
+        conn.close()
+    except Exception as e:
+        print('Issue finding city in DB.',e)
+    #Grab cityA name from DB
+
+    cityA_str = city_nameA+', '+state_nameA
+
+    #Grab cityB name from DB
+    try:
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+        statement = "SELECT Name, State "
+        statement += "FROM Cities "
+        statement += "WHERE Id = '{}'".format(city_idB)
+        cur.execute(statement)
+        x = cur.fetchall()
+        city_nameB = x[0][0]
+        state_nameB = x[0][1]
+        conn.close()
+    except Exception as e:
+        print('Issue finding city in DB.',e)
+    #Grab cityB name from DB
+
+    cityB_str = city_nameB+', '+state_nameB
+
+    #trace1
+    trace1 = go.Bar(
+    x = [cityA_str, cityB_str],
+    y = [price_0_800[0],price_0_800[1]],
+    name = '<=800'
+    )
+
+    #trace2
+    trace2 = go.Bar(
+    x = [cityA_str, cityB_str],
+    y = [price_801_1000[0],price_801_1000[1]],
+    name = '801 to 1000'
+    )
+
+    #trace3
+    #x = [cityA name, cityB name]
+    #y = [cityA count, cityB count]
+    #name = '1000 to 1500'
+
+    #trace4
+    #x = [cityA name, cityB name]
+    #y = [cityA count, cityB count]
+    #name = '1501 to 2000'
+
+    #trace5
+    #x = [cityA name, cityB name]
+    #y = [cityA count, cityB count]
+    #name = '2000+'
+
+    data = [trace1, trace2]
+    layout = go.Layout(
+            barmode='stack'
+            )
+
+    fig = go.Figure(data=data, layout=layout)
+    py.plot(fig, filename='stacked-bar')
 
 #end of graph_3
 
