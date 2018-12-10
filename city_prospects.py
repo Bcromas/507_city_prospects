@@ -221,13 +221,13 @@ def check_cache(url):
 def apartment_prices(city,city_id):
     city_id = city_id
 
-    for i in range(0,9):
+    for i in range(0,14):
         try:
             page = i+1
 
             zil_base_url = 'https://www.zillow.com/homes/for_rent'
             zil_city_url = zil_base_url+"/"+city+"/"+str(page)+"_p"
-            # print('URL to crawl: ',zil_city_url)
+            print('URL to crawl: ',zil_city_url)
             city_in_cache = check_cache(zil_city_url)
             city_soup = BeautifulSoup(city_in_cache,'html.parser')
             photo_cards = city_soup.find(class_="photo-cards")
@@ -605,6 +605,7 @@ def graph_4(city_idA, city_idB):
 #end of graph_4
 
 if __name__ == "__main__":
+
     while True:
         #load help text
         try:

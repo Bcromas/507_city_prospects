@@ -35,5 +35,20 @@ class TestData(unittest.TestCase):
         self.assertEqual(result,2)
     #end testing of DB setup, insert, & querying
 
+class TestCrawl(unittest.TestCase):
+
+    def test_zillow(self):
+        # DBNAME = "test.db"
+        # city = 'Syracuse'
+        # state = 'NY'
+        # find = cities_id(city,state) #holds the id of the relevant Cities record in DB
+        # apartment_prices(city_input,find)
+        pass
+
+class TestDB(unittest.TestCase):
+
+
+
+
 
 unittest.main()
