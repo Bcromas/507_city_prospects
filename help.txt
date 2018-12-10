@@ -1,9 +1,15 @@
 
 ***Help/Command Menu***
 
-'add city': crawl & scrape Zillow.com for apartments in a given city.
+'Add city': Crawl & scrape Zillow.com for apartments in a given city. NOTE: can take several minutes.
 
-'visuals': view data on a single city or compare two cities. Options include a scatterplot of rent & square feet for a city, box plots showing rent & square feet for a city...ADD MORE
+'Visuals': View data on a single city or compare two cities. Options include: 
+1 - scatter plot of rent & square feet for a city
+2 - box plots of rent & square feet for a city
+3 - stacked bars comparing rent in 2 cities
+4 - table of averages comparing 2 cities.
 
-'exit': return to previous screen or exit program if at main menu.
+'Delete_db': Delete & rebuild the DB.
+
+'Exit': Return to previous screen or exit program if at main menu.
  

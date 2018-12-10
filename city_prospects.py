@@ -691,8 +691,9 @@ def graph_4(city_idA, city_idB):
     trace = go.Table(
      header=dict(values=['City', 'Average Rent', 'Average # Beds', 'Average # Baths', 'Average SQFT'],
                 line = dict(color='#7D7F80'),
-                fill = dict(color='#a1c3d1'),
-                align = ['left'] * 3),
+                fill = dict(color='rgb(0, 172, 234)'),
+                font = dict(color='white',size=12),
+                align = ['left'] * 1),
     cells=dict(values=[[cityA_str,cityB_str, 'differences'], #col for city name
                        [avg_price_nameA, avg_price_nameB, diff_price],
                        [avg_beds_nameA, avg_beds_nameB, diff_beds],
@@ -701,10 +702,11 @@ def graph_4(city_idA, city_idB):
                        ],
                line = dict(color='#7D7F80'),
                fill = dict(color='#EDFAFF'),
-               align = ['left'] * 3))
+               font = dict(color='black',size=12),
+               align = ['left'] * 1))
 
     layout = dict(
-    autosize=True,
+    autosize=False,
     title='<b>Apartment Averages for {} & {}</b>'.format(cityA_str, cityB_str),
     )
     data = [trace]
@@ -800,7 +802,7 @@ if __name__ == "__main__":
         #input to visualize data on apts
         if main_input.lower() == 'visuals':
             while True:
-                visuals_input = input('\nSelect a visualization option:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - stacked bars comparing rent in 2 cities\n4 - SOMETHING\n\n')
+                visuals_input = input('\nSelect a visualization option:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - stacked bars comparing rent in 2 cities\n4 - table of averages comparing 2 cities\n\n')
 
                 #generate scatter or box plot of rent & SQFT for selected city
                 if (visuals_input.lower() == '1' or visuals_input.lower() == '2') :
