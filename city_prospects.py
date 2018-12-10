@@ -601,7 +601,116 @@ def graph_3(city_idA, city_idB):
 
 #start of graph_4
 def graph_4(city_idA, city_idB):
-    print('made it to graph_4', city_idA, city_idB)
+    # print('made it to graph_4', city_idA, city_idB)
+
+    # AVGs for cityA
+    try:
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+        statement = "SELECT AVG(Price), AVG(Beds), AVG(Baths), AVG(SQFT) "
+        statement += "FROM Apartments "
+        statement += "WHERE City = '{}'".format(city_idA)
+        cur.execute(statement)
+        x = cur.fetchall()
+        avg_price_nameA = round(x[0][0],2)
+        avg_beds_nameA = round(x[0][1],1)
+        avg_baths_nameA = round(x[0][2],1)
+        avg_sqft_nameA = round(x[0][3],2)
+        # for i in cur:
+        #     print('do something')
+        conn.close()
+    except Exception as e:
+        print('Issue getting rent from DB.',e)
+    # AVGs for cityA
+
+    # print('A',avg_price_nameA, avg_beds_nameA, avg_baths_nameA, avg_sqft_nameA)
+
+    # AVGs for cityB
+    try:
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+        statement = "SELECT AVG(Price), AVG(Beds), AVG(Baths), AVG(SQFT) "
+        statement += "FROM Apartments "
+        statement += "WHERE City = '{}'".format(city_idB)
+        cur.execute(statement)
+        x = cur.fetchall()
+        avg_price_nameB = round(x[0][0],2)
+        avg_beds_nameB = round(x[0][1],1)
+        avg_baths_nameB = round(x[0][2],1)
+        avg_sqft_nameB = round(x[0][3],2)
+        # for i in cur:
+        #     print('do something')
+        conn.close()
+    except Exception as e:
+        print('Issue getting rent from DB.',e)
+    # AVGs for cityB
+
+    # print('B',avg_price_nameB, avg_beds_nameB, avg_baths_nameB, avg_sqft_nameB)
+
+    #Grab cityA name from DB
+    try:
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+        statement = "SELECT Name, State "
+        statement += "FROM Cities "
+        statement += "WHERE Id = '{}'".format(city_idA)
+        cur.execute(statement)
+        x = cur.fetchall()
+        city_nameA = x[0][0]
+        state_nameA = x[0][1]
+        conn.close()
+    except Exception as e:
+        print('Issue finding city in DB.',e)
+    #Grab cityA name from DB
+
+    cityA_str = city_nameA+', '+state_nameA
+
+    #Grab cityB name from DB
+    try:
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+        statement = "SELECT Name, State "
+        statement += "FROM Cities "
+        statement += "WHERE Id = '{}'".format(city_idB)
+        cur.execute(statement)
+        x = cur.fetchall()
+        city_nameB = x[0][0]
+        state_nameB = x[0][1]
+        conn.close()
+    except Exception as e:
+        print('Issue finding city in DB.',e)
+    #Grab cityB name from DB
+
+    cityB_str = city_nameB+', '+state_nameB
+
+    diff_price = round(abs(avg_price_nameA-avg_price_nameB),2)
+    diff_beds = round(abs(avg_beds_nameA-avg_beds_nameB),1)
+    diff_baths = round(abs(avg_baths_nameA-avg_baths_nameB),1)
+    diff_sqft = round(abs(avg_sqft_nameA-avg_sqft_nameB),2)
+
+    trace = go.Table(
+     header=dict(values=['City', 'Average Rent', 'Average # Beds', 'Average # Baths', 'Average SQFT'],
+                line = dict(color='#7D7F80'),
+                fill = dict(color='#a1c3d1'),
+                align = ['left'] * 3),
+    cells=dict(values=[[cityA_str,cityB_str, 'differences'], #col for city name
+                       [avg_price_nameA, avg_price_nameB, diff_price],
+                       [avg_beds_nameA, avg_beds_nameB, diff_beds],
+                       [avg_baths_nameA, avg_baths_nameB, diff_baths],
+                       [avg_sqft_nameA, avg_sqft_nameB, diff_sqft],
+                       ],
+               line = dict(color='#7D7F80'),
+               fill = dict(color='#EDFAFF'),
+               align = ['left'] * 3))
+
+    layout = dict(
+    autosize=True,
+    title='<b>Apartment Averages for {} & {}</b>'.format(cityA_str, cityB_str),
+    )
+    data = [trace]
+    fig = dict(data=data, layout=layout)
+    py.plot(fig, filename = 'AVG Apts {}-{}'.format(cityA_str, cityB_str))
+
 #end of graph_4
 
 if __name__ == "__main__":
