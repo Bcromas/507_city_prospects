@@ -7,6 +7,7 @@ class TestData(unittest.TestCase):
     def test_ZillowHome(self):
         x = ZillowHome(streetAddress = "123 Main St.", city = "8" , beds = "3" , sqft = "1200" , price = "1675" , url = "www.zillow.com")
         self.assertEqual(x.streetAddress, "123 Main St.")
+        self.assertEqual(x.city, "8")
         self.assertEqual(x.price_sqft, 1.396)
         self.assertEqual(x.url, "www.zillow.com")
         self.assertEqual(str(x), "123 Main St. - Price:1675 - Price/SQFT:1.396")
@@ -35,17 +36,36 @@ class TestData(unittest.TestCase):
         self.assertEqual(result,2)
     #end testing of DB setup, insert, & querying
 
-class TestCrawl(unittest.TestCase):
-
-    def test_zillow(self):
-        # DBNAME = "test.db"
-        # city = 'Syracuse'
-        # state = 'NY'
-        # find = cities_id(city,state) #holds the id of the relevant Cities record in DB
-        # apartment_prices(city_input,find)
-        pass
-
 class TestDB(unittest.TestCase):
+
+    DBNAME = "city_prospects.db"
+
+    def test_DB_query(self):
+        # DBNAME = "city_prospects.db"
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+        statement = "SELECT AVG(Price), AVG(Beds), AVG(Baths), AVG(SQFT) "
+        statement += "FROM Apartments "
+        cur.execute(statement)
+        x = cur.fetchall()
+        self.assertGreater(x[0][0],0)
+        self.assertGreater(x[0][1],0)
+        self.assertGreater(x[0][2],0)
+        self.assertGreater(x[0][3],0)
+
+    def test_apt_summ(self):
+        conn = sqlite3.connect(DBNAME)
+        cur = conn.cursor()
+        statement = "SELECT Cities.Name, Cities.State, Count(*) "
+        statement += "FROM Apartments "
+        statement += "LEFT JOIN Cities on Apartments.City == Cities.Id "
+        statement += "GROUP BY City "
+        statement += "ORDER BY Cities.Name"
+        cur.execute(statement)
+        x = cur.fetchall()
+        self.assertGreater(len(x[0][0]),0)
+        self.assertGreater(len(x[0][1]),0)
+        self.assertGreater(x[0][2],0)
 
 
 

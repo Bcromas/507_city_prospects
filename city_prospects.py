@@ -29,8 +29,14 @@ class ZillowHome():
     def __init__(self, streetAddress, city=None, beds=None, baths=None, sqft=None, price=None, url=None):
         self.streetAddress = streetAddress
         self.city = city
-        self.beds = beds
-        self.baths = baths
+        if beds == "":
+            self.beds = None
+        else:
+            self.beds = beds
+        if baths == "":
+            self.baths = None
+        else:
+            self.baths = baths
         if sqft == "":
             self.sqft = None
         else:
@@ -114,7 +120,7 @@ def db_setup(DBNAME):
         'Baths' INTEGER,
         'SQFT' INTEGER,
         'Price/SQFT' REAL,
-        'URL' TEXT,
+        'URL' TEXT UNIQUE,
 		CONSTRAINT fk_cities
 		FOREIGN KEY ('City')
 		REFERENCES Cities(Id)
@@ -221,6 +227,7 @@ def check_cache(url):
 def apartment_prices(city,city_id):
     city_id = city_id
 
+    #crawl up to 20 pages at Zillow.com
     for i in range(0,20):
         try:
             page = i+1
@@ -275,6 +282,7 @@ def apartment_prices(city,city_id):
                     try:
                         if fact_category.text == 'Bedrooms': #find apt detail with given title
                             zil_beds = fact_category.parent.find(class_="hdp-fact-value").text #go back up one level to grab actual value for apt detail with given title above
+                            zil_beds_clean = zil_beds.replace("-","")
                     except:
                         pass
 
@@ -284,6 +292,7 @@ def apartment_prices(city,city_id):
                 for i in zil_bathsY:
                     if 'bath' in i.text:
                         zil_bathsZ = i.text.split(' ')[0]
+                        zil_bathsZ_clean = zil_bathsZ.replace("-","")
                     else:
                         pass
 
@@ -297,7 +306,7 @@ def apartment_prices(city,city_id):
                         pass
                 zil_sqftZ_clean = zil_sqftZ.replace(",","").replace("-","")
 
-                x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds, baths = zil_bathsZ, sqft = zil_sqftZ_clean, url = zil_url)
+                x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds_clean, baths = zil_bathsZ_clean, sqft = zil_sqftZ_clean, url = zil_url)
                 # print(x)
                 test_list.append(x)
             for i in test_list:
@@ -371,7 +380,6 @@ def graph_1(city_id):
     fig = dict(data=data, layout=layout)
 
     #plot
-    # plot_url = py.plot(data, filename='basic-line')
     py.plot(fig, filename="Rent SQFT Apts {}".format(city_name))
 #end of graph_1
 
@@ -596,12 +604,10 @@ def graph_3(city_idA, city_idB):
 
     fig = go.Figure(data=data, layout=layout)
     py.plot(fig, filename='Stacked Bars {}-{}'.format(cityA_str, cityB_str))
-
 #end of graph_3
 
 #start of graph_4
 def graph_4(city_idA, city_idB):
-    # print('made it to graph_4', city_idA, city_idB)
 
     # AVGs for cityA
     try:
@@ -616,14 +622,10 @@ def graph_4(city_idA, city_idB):
         avg_beds_nameA = round(x[0][1],1)
         avg_baths_nameA = round(x[0][2],1)
         avg_sqft_nameA = round(x[0][3],2)
-        # for i in cur:
-        #     print('do something')
         conn.close()
     except Exception as e:
         print('Issue getting rent from DB.',e)
     # AVGs for cityA
-
-    # print('A',avg_price_nameA, avg_beds_nameA, avg_baths_nameA, avg_sqft_nameA)
 
     # AVGs for cityB
     try:
@@ -638,14 +640,10 @@ def graph_4(city_idA, city_idB):
         avg_beds_nameB = round(x[0][1],1)
         avg_baths_nameB = round(x[0][2],1)
         avg_sqft_nameB = round(x[0][3],2)
-        # for i in cur:
-        #     print('do something')
         conn.close()
     except Exception as e:
         print('Issue getting rent from DB.',e)
     # AVGs for cityB
-
-    # print('B',avg_price_nameB, avg_beds_nameB, avg_baths_nameB, avg_sqft_nameB)
 
     #Grab cityA name from DB
     try:
@@ -715,7 +713,6 @@ def graph_4(city_idA, city_idB):
     data = [trace]
     fig = dict(data=data, layout=layout)
     py.plot(fig, filename = 'AVG Apts {}-{}'.format(cityA_str, cityB_str))
-
 #end of graph_4
 
 if __name__ == "__main__":
@@ -888,7 +885,6 @@ if __name__ == "__main__":
                             break
                         #end funct to find cityB
 
-                        # print(city_idA, city_idB)
                         try:
                             if visuals_input == '3':
                                 graph_3(city_idA, city_idB)
