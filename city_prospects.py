@@ -221,7 +221,7 @@ def check_cache(url):
 def apartment_prices(city,city_id):
     city_id = city_id
 
-    for i in range(0,14):
+    for i in range(0,20):
         try:
             page = i+1
 
@@ -693,7 +693,8 @@ def graph_4(city_idA, city_idB):
                 line = dict(color='#7D7F80'),
                 fill = dict(color='rgb(0, 172, 234)'),
                 font = dict(color='white',size=12),
-                align = ['left'] * 1),
+                # align = ['left'] * 1),
+                align = ['left']),
     cells=dict(values=[[cityA_str,cityB_str, 'differences'], #col for city name
                        [avg_price_nameA, avg_price_nameB, diff_price],
                        [avg_beds_nameA, avg_beds_nameB, diff_beds],
@@ -703,7 +704,9 @@ def graph_4(city_idA, city_idB):
                line = dict(color='#7D7F80'),
                fill = dict(color='#EDFAFF'),
                font = dict(color='black',size=12),
-               align = ['left'] * 1))
+               # align = ['left'] * 1)
+               align = ['left'])
+               )
 
     layout = dict(
     autosize=False,
@@ -748,7 +751,7 @@ if __name__ == "__main__":
         print('Available cities\n----------------')
         for i in cities_avail:
             print('{}-{} ({})'.format(i[0],i[1],i[2]))
-        main_input = input('\nPlease enter a command (or "help" for options): ')
+        main_input = input("\nPlease enter a command (or 'help' for options): ")
         #start up greeting
 
         #input to return to previous screen or exit program
@@ -767,7 +770,7 @@ if __name__ == "__main__":
         #input to delete & rebuild DB
         if main_input.lower() == 'delete_db':
             while True:
-                delete_input = input('Confirm you want to delete & rebuild the DB by typing "DELETE" ')
+                delete_input = input('Confirm you want to delete & rebuild the DB by typing "DELETE"\n\n')
                 if delete_input == 'DELETE':
                     # print('gonna delete')
                     db_setup(DBNAME)
@@ -802,7 +805,7 @@ if __name__ == "__main__":
         #input to visualize data on apts
         if main_input.lower() == 'visuals':
             while True:
-                visuals_input = input('\nSelect a visualization option:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - stacked bars comparing rent in 2 cities\n4 - table of averages comparing 2 cities\n\n')
+                visuals_input = input('\nSelect a visualization:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - stacked bars comparing rent in 2 cities\n4 - table of averages comparing 2 cities\n\n')
 
                 #generate scatter or box plot of rent & SQFT for selected city
                 if (visuals_input.lower() == '1' or visuals_input.lower() == '2') :
@@ -826,7 +829,7 @@ if __name__ == "__main__":
                                     elif visuals_input == '2':
                                         graph_2(city_id)
                                 except:
-                                    print("\nCould not visualize '{}'. Please try adding a city from main menu or try an available city.\n\n".format(graph_input))
+                                    print("\nCould not visualize '{}'. Please try adding a city from main menu or try an available city.\n".format(graph_input))
                                     # conn.close()
 
                             #input to return to previous screen or exit program
@@ -855,10 +858,14 @@ if __name__ == "__main__":
                             try:
                                 city_idA = check_city(city,state)
                             except Exception as e:
-                                print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n\n".format(graph_inputA))
+                                print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n".format(graph_inputA))
                                 conn.close()
+                                break
                         if graph_inputA == "random":
                             city_idA = rando_city()
+                        if '-' not in graph_inputA:
+                            print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n".format(graph_inputA))
+                            break
                         #end funct to find cityA
 
                         #start funct to find cityB
@@ -871,18 +878,24 @@ if __name__ == "__main__":
                             try:
                                 city_idB = check_city(city,state)
                             except Exception as e:
-                                print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n\n".format(graph_inputB))
+                                print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n".format(graph_inputB))
                                 conn.close()
+                                break
                         if graph_inputB == "random":
                             city_idB = rando_city()
+                        if '-' not in graph_inputB:
+                            print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n".format(graph_inputB))
+                            break
                         #end funct to find cityB
 
                         # print(city_idA, city_idB)
-                        if visuals_input == '3':
-                            graph_3(city_idA, city_idB)
-                        elif visuals_input == '4':
-                            graph_4(city_idA, city_idB)
-
+                        try:
+                            if visuals_input == '3':
+                                graph_3(city_idA, city_idB)
+                            elif visuals_input == '4':
+                                graph_4(city_idA, city_idB)
+                        except Exception as e:
+                            print("\nCould not visualize '{}' and/or '{}'. Please try adding cities from main menu or try available cities.\n".format(graph_inputA, graph_inputB))
 
                 #generate stacked bar chart using rent or summary table comparing cities
 

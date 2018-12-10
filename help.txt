@@ -3,7 +3,7 @@
 
 'Add city': Crawl & scrape Zillow.com for apartments in a given city. NOTE: can take several minutes.
 
-'Visuals': View data on a single city or compare two cities. Options include: 
+'Visuals': View data on a single city or compare two cities. Visualizations include: 
 1 - scatter plot of rent & square feet for a city
 2 - box plots of rent & square feet for a city
 3 - stacked bars comparing rent in 2 cities
