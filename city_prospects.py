@@ -647,10 +647,27 @@ if __name__ == "__main__":
         #input to access help
         if main_input.lower() == 'help':
             while True:
-                help_print = input(help_text)
-                if help_print.lower() == 'exit':
+                help_input = input(help_text)
+                if help_input.lower() == 'exit':
                     break
         #input to access help
+
+        #input to delete & rebuild DB
+        if main_input.lower() == 'delete_db':
+            while True:
+                delete_input = input('Confirm you want to delete & rebuild the DB by typing "DELETE" ')
+                if delete_input == 'DELETE':
+                    # print('gonna delete')
+                    db_setup(DBNAME)
+                    break
+                elif delete_input.lower() == 'exit':
+                    break
+                elif delete_input.lower() == 'help':
+                    while True:
+                        help_print = input(help_text)
+                        if help_print.lower() == 'exit':
+                            break
+        #input to delete & rebuild DB
 
         #input to add new city from Zillow
         if main_input.lower() == 'add city':
