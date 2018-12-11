@@ -806,7 +806,7 @@ if __name__ == "__main__":
         #input to visualize data on apts
         if main_input.lower() == 'visuals':
             while True:
-                visuals_input = input('\nSelect a visualization:\n1 - scatter plot of rent & square feet for a city\n2 - box plots of rent & square feet for a city\n3 - stacked bars comparing rent in 2 cities\n4 - table of averages comparing 2 cities\n\n')
+                visuals_input = input('\nSelect a visualization:\n1 - Scatter plot of rent & square feet for a city.\n2 - Box plots of rent & square feet for a city.\n3 - Stacked bars comparing rent in 2 cities.\n4 - Table of averages comparing 2 cities.\n\n')
 
                 #generate scatter or box plot of rent & SQFT for selected city
                 if (visuals_input.lower() == '1' or visuals_input.lower() == '2') :
@@ -845,7 +845,9 @@ if __name__ == "__main__":
                         graph_inputA = input('\nEnter your 1st city in format {city name}-{state abbrev} or try "random".\n\n')
                         if graph_inputA == 'exit':
                             break
-                        if '-' in graph_inputA:
+                        elif graph_inputA == "random":
+                            city_idA = rando_city()
+                        elif '-' in graph_inputA:
                             city = graph_inputA.split('-')[0]
                             state = graph_inputA.split('-')[1]
                             try:
@@ -854,9 +856,7 @@ if __name__ == "__main__":
                                 print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n".format(graph_inputA))
                                 conn.close()
                                 break
-                        if graph_inputA == "random":
-                            city_idA = rando_city()
-                        if '-' not in graph_inputA:
+                        elif '-' not in graph_inputA:
                             print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n".format(graph_inputA))
                             break
                         #end funct to find cityA
@@ -865,7 +865,9 @@ if __name__ == "__main__":
                         graph_inputB = input('\nEnter your 2nd city in format {city name}-{state abbrev} or try "random".\n\n')
                         if graph_inputB == 'exit':
                             break
-                        if '-' in graph_inputB:
+                        elif graph_inputB == "random":
+                            city_idB = rando_city()
+                        elif '-' in graph_inputB:
                             city = graph_inputB.split('-')[0]
                             state = graph_inputB.split('-')[1]
                             try:
@@ -874,9 +876,7 @@ if __name__ == "__main__":
                                 print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n".format(graph_inputB))
                                 conn.close()
                                 break
-                        if graph_inputB == "random":
-                            city_idB = rando_city()
-                        if '-' not in graph_inputB:
+                        elif '-' not in graph_inputB:
                             print("\nCould not find '{}'. Please try adding a city from main menu or try an available city.\n".format(graph_inputB))
                             break
                         #end funct to find cityB
