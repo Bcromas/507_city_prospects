@@ -234,7 +234,7 @@ def apartment_prices(city,city_id):
 
             zil_base_url = 'https://www.zillow.com/homes/for_rent'
             zil_city_url = zil_base_url+"/"+city+"/"+str(page)+"_p"
-            print('URL to crawl: ',zil_city_url)
+            # print('URL to crawl: ',zil_city_url)
             city_in_cache = check_cache(zil_city_url)
             city_soup = BeautifulSoup(city_in_cache,'html.parser')
             photo_cards = city_soup.find(class_="photo-cards")
