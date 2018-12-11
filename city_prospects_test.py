@@ -76,76 +76,76 @@ class TestVisuals(unittest.TestCase):
 
     #query DB for a City ID & use for graph_1
     def test_graph_1(self):
-        pass
+        # pass
 
-        # try:
-        #     conn = sqlite3.connect(DBNAME)
-        #     cur = conn.cursor()
-        #     statement = "SELECT City "
-        #     statement += "FROM Apartments "
-        #     statement += "LIMIT 1"
-        #     cur.execute(statement)
-        #     x = cur.fetchall()
-        #     city_id = x[0][0]
-        #     graph_1(city_id)
-        # except:
-        #     self.fail()
+        try:
+            conn = sqlite3.connect(DBNAME)
+            cur = conn.cursor()
+            statement = "SELECT City "
+            statement += "FROM Apartments "
+            statement += "LIMIT 1"
+            cur.execute(statement)
+            x = cur.fetchall()
+            city_id = x[0][0]
+            graph_1(city_id)
+        except:
+            self.fail()
     #query DB for a City ID & use for graph_1
 
     #query DB for a City ID & use for graph_2
     def test_graph_2(self):
-        pass
+        # pass
 
-        # try:
-        #     conn = sqlite3.connect(DBNAME)
-        #     cur = conn.cursor()
-        #     statement = "SELECT City "
-        #     statement += "FROM Apartments "
-        #     statement += "LIMIT 1"
-        #     cur.execute(statement)
-        #     x = cur.fetchall()
-        #     city_id = x[0][0]
-        #     graph_2(city_id)
-        # except:
-        #     self.fail()
+        try:
+            conn = sqlite3.connect(DBNAME)
+            cur = conn.cursor()
+            statement = "SELECT City "
+            statement += "FROM Apartments "
+            statement += "LIMIT 1"
+            cur.execute(statement)
+            x = cur.fetchall()
+            city_id = x[0][0]
+            graph_2(city_id)
+        except:
+            self.fail()
     #query DB for a City ID & use for graph_2
 
     #query DB for a City ID & use for graph_3
     def test_graph_3(self):
-        pass
+        # pass
 
-        # try:
-        #     conn = sqlite3.connect(DBNAME)
-        #     cur = conn.cursor()
-        #     statement = "SELECT City "
-        #     statement += "FROM Apartments "
-        #     statement += "GROUP BY City"
-        #     cur.execute(statement)
-        #     x = cur.fetchall()
-        #     city_idA = x[0][0]
-        #     city_idB = x[1][0]
-        #     graph_3(city_idA, city_idB)
-        # except:
-        #     self.fail()
+        try:
+            conn = sqlite3.connect(DBNAME)
+            cur = conn.cursor()
+            statement = "SELECT City "
+            statement += "FROM Apartments "
+            statement += "GROUP BY City"
+            cur.execute(statement)
+            x = cur.fetchall()
+            city_idA = x[0][0]
+            city_idB = x[1][0]
+            graph_3(city_idA, city_idB)
+        except:
+            self.fail()
     #query DB for a City ID & use for graph_3
 
     #query DB for a City ID & use for graph_3
     def test_graph_4(self):
-        pass
+        # pass
 
-        # try:
-        #     conn = sqlite3.connect(DBNAME)
-        #     cur = conn.cursor()
-        #     statement = "SELECT City "
-        #     statement += "FROM Apartments "
-        #     statement += "GROUP BY City"
-        #     cur.execute(statement)
-        #     x = cur.fetchall()
-        #     city_idA = x[0][0]
-        #     city_idB = x[1][0]
-        #     graph_4(city_idA, city_idB)
-        # except:
-        #     self.fail()
+        try:
+            conn = sqlite3.connect(DBNAME)
+            cur = conn.cursor()
+            statement = "SELECT City "
+            statement += "FROM Apartments "
+            statement += "GROUP BY City"
+            cur.execute(statement)
+            x = cur.fetchall()
+            city_idA = x[0][0]
+            city_idB = x[1][0]
+            graph_4(city_idA, city_idB)
+        except:
+            self.fail()
     #query DB for a City ID & use for graph_4
 
 unittest.main()
