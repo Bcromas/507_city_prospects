@@ -309,10 +309,12 @@ def apartment_prices(city,city_id):
                 x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds_clean, baths = zil_bathsZ_clean, sqft = zil_sqftZ_clean, url = zil_url)
                 # print(x)
                 test_list.append(x)
-            for i in test_list:
-                apartments_insert(i)
+            for i in test_list: #this was original approach & works fine
+                apartments_insert(i) #this was original approach & works fine
         except Exception as e:
             print('Error crawling pages',e)
+    # return test_list #this was approach to allow granular unit testing of funct
+    # print(test_list)
 #end of crawling Zillow for homes
 
 #start of graph_1
@@ -769,7 +771,6 @@ if __name__ == "__main__":
             while True:
                 delete_input = input('Confirm you want to delete & rebuild the DB by typing "DELETE"\n\n')
                 if delete_input == 'DELETE':
-                    # print('gonna delete')
                     db_setup(DBNAME)
                     break
                 elif delete_input.lower() == 'exit':
@@ -790,6 +791,9 @@ if __name__ == "__main__":
                     state = city_input.split('-')[1]
                     find = cities_id(city,state) #holds the id of the relevant Cities record in DB
                     apartment_prices(city_input,find)
+                    # crawl = apartment_prices(city_input,find) #related to approach to facilitate unit testing
+                    # for i in crawl:   #related to approach to facilitate unit testing
+                    #     apartments_insert(i)  #related to approach to facilitate unit testing
                 elif city_input.lower() == 'exit':
                     break
                 elif city_input.lower() == 'help':
@@ -813,21 +817,13 @@ if __name__ == "__main__":
                                 city = graph_input.split('-')[0]
                                 state = graph_input.split('-')[1]
                                 try:
-                                    # conn = sqlite3.connect(DBNAME)
-                                    # cur = conn.cursor()
-                                    # statement = "SELECT Id from Cities WHERE Name='{}' and State = '{}'".format(city.title(),state.upper())
-                                    # cur.execute(statement)
-                                    # x = cur.fetchall()
-                                    # city_id = x[0][0]
                                     city_id = check_city(city,state)
-
                                     if visuals_input == '1':
                                         graph_1(city_id)
                                     elif visuals_input == '2':
                                         graph_2(city_id)
                                 except:
                                     print("\nCould not visualize '{}'. Please try adding a city from main menu or try an available city.\n".format(graph_input))
-                                    # conn.close()
 
                             #input to return to previous screen or exit program
                             if graph_input.lower() == 'exit':
