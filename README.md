@@ -1,7 +1,7 @@
 # City Prospects
 City Prospects is a program to help individuals compare rental markets between two U.S. cities based on data scraped from Zillow.com.
 
-![Rent & Square Footage in San Diego](https://github.com/Bcromas/507_city_prospects/blob/master/README_images/Rent%20SQFT%20Apts%20San%20Diego.png)
+![Rent & Square Footage in San Diego](https://github.com/Bcromas/507_city_prospects/blob/master/README_images/Rent%20SQFT%20Apts%20San%20Diego.png?s=200)
 
 ## Usage & User Guide
 Clone or download this repository, install any missing libraries (see [requirements.txt](https://github.com/Bcromas/507_city_prospects/blob/master/requirements.txt)), and run the city_prospects.py file.
