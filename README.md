@@ -7,7 +7,7 @@ Clone or download this repository, install any missing libraries (see [requireme
 You will need a Plot.ly account to view the visualizations and can follow the installation and setup instructions here: https://plot.ly/python/getting-started/
 
 ## Data Source & By-Products
-The data is sourced by crawling and scraping up to 20 pages of search results for apartments for rent in a given city at Zillow.com (https://www.zillow.com/homes/for_rent). In terms of data by-products, a local cache is maintained in a JSON file for each Zillow.com page visited, and details captured on cities and apartments are stored in a SQLite database.
+The data is sourced by crawling and scraping up to 20 pages of search results for apartments for rent in a given city at Zillow.com. In terms of data by-products, a local cache is maintained in a JSON file for each Zillow.com page visited, and details captured on cities and apartments are stored in a SQLite database.
 
 ## Code
 
@@ -23,14 +23,14 @@ In general the program operates in the following way: accept a U.S. city in the 
 3. Stacked bars comparing rent in 2 cities.
 4. Table of averages comparing 2 cities.
 
-**'Delete_db'** Delete and rebuild the DB.
+**'Delete_db'** Delete and rebuild the SQLite database.
 
-**'Exit'** Return to previous screen or exit program if at main menu.
+**'Exit'** Return to the previous screen or exit program if at the main menu.
 
 #### Key Functions
 **cities_id(city, state)** Expects two strings describing a city (city name and state abbreviation), checks the SQLite database for a match, inserts a new record if no match is found, and returns the id of the city.
 
-**apartment_prices(city, city_id)** Expects a city name and the id of the related City record in the SQLite database, starts crawling at the first page of search results for the given city at https://www.zillow.com/homes/for_rent +city_name-state_abbrev, scrapes details for apartments from their individual pages, calls ZillowHome() to create instances of each apartment, inserts details from ZillowHome() instances into the SQLite databse, and iterates through a maximum of 20 pages of search results.
+**apartment_prices(city, city_id)** Expects a city name and the id of the related City record in the SQLite database, starts crawling at the first page of search results for the given city at https://www.zillow.com/homes/for_rent +city_name-state_abbrev, scrapes details for apartments from their individual pages, calls ZillowHome() to create instances of each apartment, inserts details from ZillowHome() instances into the SQLite database, and iterates through a maximum of 20 pages of search results.
 
 **apartments_insert(house)** Expects a ZillowHome() instance, connects to the SQLite database, and attempts to insert apartment details into the database. All ZillowHome() instances/apartments inserted are related to a record in the City table.
 

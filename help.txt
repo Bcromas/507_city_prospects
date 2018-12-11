@@ -3,13 +3,12 @@
 
 'Add city': Crawl & scrape Zillow.com for apartments in a given city. NOTE: can take several minutes.
 
-'Visuals': View data on a single city or compare two cities. Visualizations include: 
+'Visuals': View data on a single city or compare two cities. Visualizations include:
 1 - Scatter plot of rent & square feet for a city.
 2 - Box plots of rent & square feet for a city.
 3 - Stacked bars comparing rent in 2 cities.
 4 - Table of averages comparing 2 cities.
 
-'Delete_db': Delete & rebuild the DB.
+'Delete_db': Delete and rebuild the SQLite database.
 
-'Exit': Return to previous screen or exit program if at main menu.
- 
+'Exit': Return to the previous screen or exit program if at the main menu.
