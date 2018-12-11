@@ -746,7 +746,7 @@ if __name__ == "__main__":
         #load details on cities in DB
 
         #start up greeting
-        print('\nWELCOME TO CITY PROSPECTS: Review rental details for U.S. Cities\n\n')
+        print('\nWELCOME TO CITY PROSPECTS: compare rental markets between two U.S. cities based on Zillow.com\n\n')
         print('Available cities\n----------------')
         for i in cities_avail:
             print('{}-{} ({})'.format(i[0],i[1],i[2]))
