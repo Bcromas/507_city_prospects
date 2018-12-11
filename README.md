@@ -3,7 +3,7 @@ City Prospects is a program to help individuals compare rental markets between t
 
 <!-- ![Rent & Square Footage in San Diego](https://github.com/Bcromas/507_city_prospects/blob/master/README_images/Rent%20SQFT%20Apts%20San%20Diego.png) -->
 
-<img src="https://github.com/Bcromas/507_city_prospects/blob/master/README_images/Rent%20SQFT%20Apts%20San%20Diego.png" width="100" height="100">
+<img src="https://github.com/Bcromas/507_city_prospects/blob/master/README_images/Rent%20SQFT%20Apts%20San%20Diego.png" width="100" height="100"> <img src="https://github.com/Bcromas/507_city_prospects/blob/master/README_images/Stacked%20Bars%20Denver%2C%20CO-Miami%2C%20FL.png" width="100" height="100"> <img src="https://github.com/Bcromas/507_city_prospects/blob/master/README_images/Box%20Plots%20Rent%20SQFT%20Philadelphia.png" width="100" height="100">
 
 ## Usage & User Guide
 Clone or download this repository, install any missing libraries (see [requirements.txt](https://github.com/Bcromas/507_city_prospects/blob/master/requirements.txt)), and run the city_prospects.py file.
