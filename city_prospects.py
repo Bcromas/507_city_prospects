@@ -6,6 +6,7 @@ import sqlite3
 import plotly.plotly as py
 import plotly.graph_objs as go
 import random
+from numbeo import *
 
 #start of funct to load text from file
 def load_help_text():
@@ -13,7 +14,7 @@ def load_help_text():
         return f.read()
 #end of funct to load text from file
 
-#caching functionality
+#start Zillow caching functionality
 CACHE_FNAME = 'final_proj_CACHE.json'
 try:
     cache_file = open(CACHE_FNAME, 'r')
@@ -22,7 +23,7 @@ try:
     cache_file.close()
 except:
     CACHE_DICT = {}
-#end caching functionality
+#end Zillow caching functionality
 
 #start of class for capturing Zillow home details
 class ZillowHome():
@@ -93,12 +94,44 @@ def db_setup(DBNAME):
     #end of attempt to drop Apartments table
 
     #start of attempt to create Cities table
+    # try:
+    #     statement = '''
+    #     CREATE TABLE 'Cities' (
+    #     'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
+    #     'Name' TEXT,
+    #     'State' TEXT,
+    #     'Primary Transit: Walking' REAL,
+    #     'Primary Transit: Train' REAL,
+    #     'Primary Transit: Car' REAL,
+    #     'Primary Transit: WFH' REAL,
+    #     'Primary Transit: Bus' REAL,
+    #     'Primary Transit: Tram' REAL,
+    #     'Primary Transit: Other' REAL
+    #     );
+    #     '''
+    #     cur.execute(statement)
+    #     conn.commit()
+    # except Exception as e:
+    #     print("Error creating Cities table: ",e)
+    #     conn.close()
     try:
         statement = '''
         CREATE TABLE 'Cities' (
         'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
         'Name' TEXT,
-        'State' TEXT
+        'State' TEXT,
+        'Quality of Life Index' REAL,
+        'CPI Index' REAL,
+        'Groceries Index' REAL,
+        'Restaurant Price Index' REAL,
+        'Crime Index' REAL,
+        'Safety Index' REAL,
+        'Traffic Index' REAL,
+        'Traffic Time Index' REAL,
+        'Traffic Inefficiency Index' REAL,
+        'Health Care Index' REAL,
+        'Climate Index' REAL,
+        'Pollution Index' REAL
         );
         '''
         cur.execute(statement)
@@ -174,9 +207,9 @@ def cities_id(city, state):
         cur.execute(statement)
         x = cur.fetchall()
         if len(x) == 0:
-            insertion = (None,city.title(),state.upper())
+            insertion = (None,city.title(),state.upper(),None, None, None, None, None, None, None, None, None, None, None, None)
             statement = 'INSERT into Cities '
-            statement += 'VALUES (?,?,?)'
+            statement += 'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
             cur.execute(statement,insertion)
             conn.commit()
 
@@ -228,7 +261,8 @@ def apartment_prices(city,city_id):
     city_id = city_id
 
     #crawl up to 20 pages at Zillow.com
-    for i in range(0,20):
+    # for i in range(0,20):
+    for i in range(0,2):
         try:
             page = i+1
 
@@ -317,7 +351,7 @@ def apartment_prices(city,city_id):
     # print(test_list)
 #end of crawling Zillow for homes
 
-#start of graph_1
+#start of graph_1: scatter plot of rent & sqft
 def graph_1(city_id):
 
     price_list = []
@@ -383,9 +417,9 @@ def graph_1(city_id):
 
     #plot
     py.plot(fig, filename="Rent SQFT Apts {}".format(city_name))
-#end of graph_1
+#end of graph_1: scatter plot of rent & sqft
 
-#start of graph_2
+#start of graph_2: box plot of rent & sqft
 def graph_2(city_id):
 
     price_list = []
@@ -441,9 +475,9 @@ def graph_2(city_id):
 
     fig = dict(data=data, layout=layout)
     py.plot(fig, filename="Box Plots Rent SQFT {}".format(city_name))
-#end of graph_2
+#end of graph_2: box plot of rent & sqft
 
-#start of graph_3 - stacked bar chart using rent
+#start of graph_3: stacked bar chart using rent
 def graph_3(city_idA, city_idB):
 
     price_listA = []
@@ -606,9 +640,9 @@ def graph_3(city_idA, city_idB):
 
     fig = go.Figure(data=data, layout=layout)
     py.plot(fig, filename='Stacked Bars {}-{}'.format(cityA_str, cityB_str))
-#end of graph_3
+#end of graph_3: stacked bar chart using rent
 
-#start of graph_4
+#start of graph_4: summary table
 def graph_4(city_idA, city_idB):
 
     # AVGs for cityA
@@ -715,7 +749,38 @@ def graph_4(city_idA, city_idB):
     data = [trace]
     fig = dict(data=data, layout=layout)
     py.plot(fig, filename = 'AVG Apts {}-{}'.format(cityA_str, cityB_str))
-#end of graph_4
+#end of graph_4: summary table
+
+#start of graph_5: radar chart comparing two cities
+def graph_5(city_idA, city_idB):
+    data = [
+    go.Scatterpolar(
+      r = [39, 28, 8, 7, 28, 39],
+      theta = ['A','B','C', 'D', 'E', 'A'],
+      fill = 'toself',
+      name = 'Group A'
+    ),
+    go.Scatterpolar(
+      r = [1.5, 10, 39, 31, 15, 1.5],
+      theta = ['A','B','C', 'D', 'E', 'A'],
+      fill = 'toself',
+      name = 'Group B'
+    )
+    ]
+
+    layout = go.Layout(
+      polar = dict(
+        radialaxis = dict(
+          visible = True,
+          range = [0, 500]
+        )
+      ),
+      showlegend = False
+    )
+
+    fig = go.Figure(data=data, layout=layout)
+    py.plot(fig, filename = "radar multiple")
+#start of graph_5: radar chart comparing two cities
 
 if __name__ == "__main__":
 
@@ -790,10 +855,10 @@ if __name__ == "__main__":
                     city = city_input.split('-')[0]
                     state = city_input.split('-')[1]
                     find = cities_id(city,state) #holds the id of the relevant Cities record in DB
-                    apartment_prices(city_input,find)
-                    # crawl = apartment_prices(city_input,find) #related to approach to facilitate unit testing
-                    # for i in crawl:   #related to approach to facilitate unit testing
-                    #     apartments_insert(i)  #related to approach to facilitate unit testing
+                    # apartment_prices(city_input,find)
+                    Numbeo_indices(city, state, find)
+                    city_term = city.replace(' ','%20')+'-'+state
+                    apartment_prices(city_term,find)
                 elif city_input.lower() == 'exit':
                     break
                 elif city_input.lower() == 'help':
@@ -839,7 +904,7 @@ if __name__ == "__main__":
                 #generate scatter or box plot of rent & SQFT for selected city
 
                 #generate stacked bar chart using rent or summary table comparing cities
-                if (visuals_input.lower() == '3' or visuals_input.lower() == '4') :
+                if (visuals_input.lower() == '3' or visuals_input.lower() == '4' or visuals_input.lower() == '5') :
                     while True:
                         #start funct to find cityA
                         graph_inputA = input('\nEnter your 1st city in format {city name}-{state abbrev} or try "random".\n\n')
@@ -881,11 +946,16 @@ if __name__ == "__main__":
                             break
                         #end funct to find cityB
 
+                        if visuals_input == '5':
+                            graph_5(city_idA, city_idB)
+
                         try:
                             if visuals_input == '3':
                                 graph_3(city_idA, city_idB)
                             elif visuals_input == '4':
                                 graph_4(city_idA, city_idB)
+                            # elif visual_input == '5':
+                            #     graph_5(city_idA, city_idB)
                         except Exception as e:
                             print("\nCould not visualize '{}' and/or '{}'. Please try adding cities from main menu or try available cities.\n".format(graph_inputA, graph_inputB))
 
@@ -899,3 +969,24 @@ if __name__ == "__main__":
                         if help_print.lower() == 'exit':
                             break
         #input to visualize data on apts
+
+        #input to scrape city details from Numbeo
+        if main_input.lower() == 'numbeo':
+            while True:
+                numbeo_input = input('\nEnter a city below in the format {city name}-{state abbrev}\n')
+                if '-' in numbeo_input:
+                    city = numbeo_input.split('-')[0]
+                    state = numbeo_input.split('-')[1]
+                    find = cities_id(city,state) #holds the id of the relevant Cities record in DB
+                    # transit_means(city, state, find)
+                    Numbeo_indices(city, state, find)
+
+                elif numbeo_input.lower() == 'exit':
+                    break
+                elif numbeo_input.lower() == 'help':
+                    while True:
+                        help_print = input(help_text)
+                        if help_print.lower() == 'exit':
+                            break
+
+        #input to scrape city details from Numbeo
