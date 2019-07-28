@@ -21,12 +21,12 @@ class TestData(unittest.TestCase):
         cur = conn.cursor()
         city1 = 'Test'
         state1 = 'XY'
-        statement1 = "INSERT into Cities VALUES (Null, '{}', '{}')".format(city1,state1)
+        statement1 = "INSERT into Cities VALUES (Null, '{}', '{}', 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)".format(city1,state1)
         cur.execute(statement1)
         conn.commit()
         city2 = 'Check'
         state2 = 'ZZ'
-        statement2 = "INSERT into Cities VALUES (Null, '{}', '{}')".format(city2,state2)
+        statement2 = "INSERT into Cities VALUES (Null, '{}', '{}', 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)".format(city2,state2)
         cur.execute(statement2)
         conn.commit()
         statement = "SELECT Id from Cities WHERE Name='{}'".format(city2)

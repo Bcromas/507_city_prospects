@@ -1,8 +1,16 @@
 #Numbeo API funct
-from secret import numbeo_key
+# from secret import numbeo_key
 from city_prospects import *
 import requests
 import json
+
+#start reading in API key from secret.txt file
+with open('secret.txt', 'r') as f:
+    get_key = f.read()
+
+key_start = get_key.find('=')+1
+numbeo_key = get_key[key_start:]
+#end reading in API key
 
 base_url = 'https://www.numbeo.com/api/'
 
@@ -21,10 +29,10 @@ except:
 def check_numbeo_cache(url):
 
     if url in CACHE_DICT:
-        print("Retrieving from cache...")
+        # print("Retrieving from cache...")
         return CACHE_DICT[url]
     else:
-        print("Retrieving from site...")
+        # print("Retrieving from site...")
         resp = requests.get(url)
         CACHE_DICT[url] = resp.text
         dumped_json_cache = json.dumps(CACHE_DICT)

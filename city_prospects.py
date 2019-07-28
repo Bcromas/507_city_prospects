@@ -7,6 +7,10 @@ import plotly.plotly as py
 import plotly.graph_objs as go
 import random
 from numbeo import *
+import sys
+import codecs
+sys.stdout.reconfigure(encoding='utf-8')
+import re
 
 #start of funct to load text from file
 def load_help_text():
@@ -261,8 +265,7 @@ def apartment_prices(city,city_id):
     city_id = city_id
 
     #crawl up to 20 pages at Zillow.com
-    # for i in range(0,20):
-    for i in range(0,2):
+    for i in range(0,20):
         try:
             page = i+1
 
@@ -274,81 +277,99 @@ def apartment_prices(city,city_id):
             photo_cards = city_soup.find(class_="photo-cards")
             test_list = []
             url_list = []
+            apt_buildings = []
 
             for i in photo_cards:
                 try:
                     home_url = i.a['href']
-                    if 'homedetails'in home_url:
-                        zil_home_url = zil_base_url+home_url
-                        url_list.append(zil_home_url)
+                    if 'homedetails'in home_url: #urls with /b/ in them indicate an apt building which has different html
+                        # zil_home_url = zil_base_url+home_url
+                        # url_list.append(zil_home_url)
+                        url_list.append(home_url)
                     else:
-                        pass
+                        apt_buildings.append(home_url) #can try to process these html pages in future
                 except Exception as e:
-                    # print('Error: ',e)
-                    pass
+                    pass #better to just ignore/pass on errors
+
             for i in url_list:
                 home_in_cache = check_cache(i)
                 home_soup = BeautifulSoup(home_in_cache,'html.parser')
-
+            
                 zil_url = i #here's apt URL
 
                 #FINDING STREET ADDRESS
-                zil_streetAddressX = home_soup.find(class_ = "zsg-content-header addr")
-                zil_streetAddressY = zil_streetAddressX.find('h1')
-                zil_streetAddressZ = str(zil_streetAddressY.contents[0]) #here's the actual street address
-                zil_streetAddress_clean = zil_streetAddressZ.strip()
-                if zil_streetAddress_clean[-1] == ',':
-                    zil_streetAddress_cleaner = zil_streetAddress_clean[:-1]
-                else:
-                    zil_streetAddress_cleaner = zil_streetAddress_clean
+                try:
+                    zil_streetAddressX = home_soup.find(class_ = "ds-price-change-address-row ds-collapse-row")
+                    zil_streetAddressY = zil_streetAddressX.find('h1')
+                    zil_streetAddressZ = str(zil_streetAddressY.contents[0])
+                    zil_streetAddress_clean = re.sub(r'<span>|</span>', '',zil_streetAddressZ)
+                    zil_streetAddress_cleaner = re.sub(r'<a.*</a>','',zil_streetAddress_clean)
+                    if zil_streetAddress_cleaner[-1] == ',':
+                        zil_streetAddress_cleanest = zil_streetAddress_cleaner[:-1]
+                    else:
+                        zil_streetAddress_cleanest = zil_streetAddress_cleaner
+                    # print(zil_streetAddress_cleanest)
+                except Exception as e:
+                    # print('Error in street address:',e)
+                    zil_streetAddress_cleanest = ""
+
 
                 #FINDING PRICE
-                zil_priceX = home_soup.find(class_ ="zsg-lg-1-3 zsg-md-1-1 hdp-summary")
-                zil_priceY = zil_priceX.find(class_ ="main-row home-summary-row")
-                zil_price = zil_priceY.find(class_ ="").contents[0] #here's the actual price
-                zil_price_clean = zil_price.replace("+","").replace("$","").replace(" ","").replace(",", "")
-
+                try:
+                    zil_priceX = home_soup.find(class_ ="ds-summary-row ds-collapse-row")
+                    zil_priceY = zil_priceX.find('h3')
+                    zil_priceZ = zil_priceY.find(class_="ds-value").contents[0]
+                    zil_price_clean = zil_priceZ.replace("+","").replace("$","").replace(" ","").replace(",", "")
+                except Exception as e:
+                    # print('Error in apt price:',e)
+                    zil_price_clean = ""
+            
                 #FINDING BEDS
-                facts_expandable = home_soup.find(class_ ="hdp-facts-expandable-container clear") #one large section starting with 'Facts and Features'
-                facts_columns = facts_expandable.find_all(class_ = "hdp-fact-container-columns") #multiple subsections containing grouped details on apt
-                for i in facts_columns: #iterate through various subsections e.g. 'RENTAL FACTS' or 'INTERIOR FEATURES'
-                    fact_category = i.find(class_ = "hdp-fact-category") #grab all 'fact categories' a.k.a. apt details
-                    try:
-                        if fact_category.text == 'Bedrooms': #find apt detail with given title
-                            zil_beds = fact_category.parent.find(class_="hdp-fact-value").text #go back up one level to grab actual value for apt detail with given title above
-                            zil_beds_clean = zil_beds.replace("-","")
-                    except:
-                        pass
+                try:
+                    zil_bedsX = home_soup.find(class_ = "ds-bed-bath-living-area-header")
+                    zil_bedsY = zil_bedsX.find_all(class_ = "ds-bed-bath-living-area")[0].contents[0]
+                    zil_beds_clean = re.sub(r'<span>|</span>', '',str(zil_bedsY))
+                    zil_beds_cleaner = zil_beds_clean.replace(",","").replace("-","")
+                    # print(zil_beds_cleaner)
+                except Exception as e:
+                    # print('Error in beds:',e)
+                    zil_beds_cleaner = ""
 
                 #FINDING BATHS
-                zil_bathsX = home_soup.find(class_ = "zsg-content-header addr")
-                zil_bathsY = zil_bathsX.find_all(class_="addr_bbs")
-                for i in zil_bathsY:
-                    if 'bath' in i.text:
-                        zil_bathsZ = i.text.split(' ')[0]
-                        zil_bathsZ_clean = zil_bathsZ.replace("-","")
-                    else:
-                        pass
+                try:
+                    zil_bathsX = home_soup.find(class_ = "ds-bed-bath-living-area-header")
+                    zil_bathsY = zil_bathsX.find_all(class_ = "ds-bed-bath-living-area")[-2].contents[0]
+                    zil_baths_clean = re.sub(r'<span>|</span>', '',str(zil_bathsY))
+                    zil_baths_cleaner = zil_baths_clean.replace(",","").replace("-","")
+                    # print(zil_baths_cleaner)
+                except Exception as e:
+                    # print('Error in baths:',e)
+                    zil_baths_cleaner = ""
 
                 #FINDING SQFT
-                zil_sqftX = home_soup.find(class_ = "zsg-content-header addr")
-                zil_sqftY = zil_sqftX.find_all(class_="addr_bbs")
-                for i in zil_sqftY:
-                    if 'sqft' in i.text:
-                        zil_sqftZ = i.text.split(' ')[0]
-                    else:
-                        pass
-                zil_sqftZ_clean = zil_sqftZ.replace(",","").replace("-","")
+                try:
+                    zil_sqftX = home_soup.find(class_ = "ds-bed-bath-living-area-header")
+                    zil_sqftY = zil_sqftX.find_all(class_ = "ds-bed-bath-living-area")[-1].contents[0]
+                    zil_sqft_clean = re.sub(r'<span>|</span>', '',str(zil_sqftY))
+                    zil_sqft_cleaner = zil_sqft_clean.replace(",","").replace("-","")
+                    # print(zil_sqft_cleaner)
+                except Exception as e:
+                    # print('Error in SQFT:',e)
+                    zil_sqft_cleaner = ""
 
-                x = ZillowHome(streetAddress = zil_streetAddress_cleaner, city = city_id, price = zil_price_clean, beds = zil_beds_clean, baths = zil_bathsZ_clean, sqft = zil_sqftZ_clean, url = zil_url)
+                x = ZillowHome(streetAddress = zil_streetAddress_cleanest, city = city_id, price = zil_price_clean, beds = zil_beds_cleaner, baths = zil_baths_cleaner, sqft = zil_sqft_cleaner, url = zil_url)
                 # print(x)
                 test_list.append(x)
+
             for i in test_list: #this was original approach & works fine
-                apartments_insert(i) #this was original approach & works fine
+                # apartments_insert(i) #this was original approach & works fine
+                if (i.streetAddress == "") & (i.price == ""):
+                    pass
+                else:
+                    apartments_insert(i)
         except Exception as e:
             print('Error crawling pages',e)
-    # return test_list #this was approach to allow granular unit testing of funct
-    # print(test_list)
+    
 #end of crawling Zillow for homes
 
 #start of graph_1: scatter plot of rent & sqft
